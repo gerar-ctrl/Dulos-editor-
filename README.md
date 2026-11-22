@@ -1,6 +1,12 @@
-# 🎬 Dulos editor — Editor de Video Multipista para PC (Windows), Android y Web
+# 🎬 Dulos editor — Editor de Videos Cortos para PC (Windows), Android y Web
 
-**Dulos editor** es un editor de video no lineal multipista acelerado por GPU (**WebGL / Shaders GLSL**), con **Web Audio API**, exportación nativa con **FFmpeg** en escritorio (Windows) y **WebCodecs / MP4 Muxer** en navegador y Android.
+> [!IMPORTANT]
+> ### ⚠️ Aviso importante antes de descargar
+> **Dulos editor está diseñado exclusivamente para videos cortos — NO está pensado para videos largos ni proyectos pesados.**
+>
+> Es ideal para **Reels, TikToks, Shorts, estados y clips rápidos**. Si necesitás editar películas, vlogs extensos o producciones de larga duración, te conviene usar un editor de escritorio dedicado a proyectos grandes.
+
+**Dulos editor** es un editor de videos cortos multipista acelerado por GPU (**WebGL / Shaders GLSL**), con **Web Audio API**, exportación nativa con **FFmpeg** en escritorio (Windows) y **WebCodecs / MP4 Muxer** en navegador y Android.
 
 ---
 
