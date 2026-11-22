@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=overlays-content" />
+    <title>Dulos editor</title>
+    <meta name="description" content="Dulos editor - Editor de video profesional en el navegador con WebGL, WebCodecs, Web Audio API y renderizado acelerado por hardware." />
+    
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <meta name="theme-color" content="#090a0f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Dulos editor" />
+    <meta name="application-name" content="Dulos editor" />
+    
+    <!-- Icons & Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="/splash.jpg" />
+
+    <!-- Google Fonts (non-render-blocking for instant mobile first paint) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:ital,wght@0,700;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Space+Grotesk:wght@600;700&family=Oswald:wght@600;700&family=Permanent+Marker&family=Fira+Code:wght@500;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-0"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Poppins:wght@400;700;900&family=Lato:wght@400;700;900&family=Raleway:wght@400;700;900&family=Nunito:wght@400;700;900&family=Rubik:wght@400;700;900&family=Outfit:wght@400;700;900&family=Syne:wght@600;800&family=DM+Sans:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;700;800&family=Anton&family=Bangers&family=Black+Ops+One&family=Righteous&family=Archivo+Black&family=Russo+One&family=Staatliches&family=Teko:wght@500;700&family=Bungee&family=Ultra&family=Merriweather:wght@400;700;900&family=Lora:wght@400;700&family=Cinzel:wght@600;800&family=Abril+Fatface&family=Cormorant+Garamond:wght@600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-1"
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Prata&family=Bodoni+Moda:wght@500;800&family=Pacifico&family=Dancing+Script:wght@600;700&family=Lobster&family=Caveat:wght@600;700&family=Satisfy&family=Great+Vibes&family=Sacramento&family=Shadows+Into+Light&family=Kaushan+Script&family=Amatic+SC:wght@700&family=Orbitron:wght@600;800&family=Audiowide&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Chakra+Petch:wght@600;700&family=Exo+2:wght@600;800&family=Creepster&family=Monoton&family=Fredoka:wght@500;700&family=Luckiest+Guy&family=Special+Elite&family=JetBrains+Mono:wght@500;800&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-2"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700;800&family=Work+Sans:wght@400;700;900&family=Manrope:wght@400;700;800&family=Urbanist:wght@400;700;900&family=Quicksand:wght@500;700&family=Josefin+Sans:wght@400;700&family=Barlow:wght@500;700;900&family=Mulish:wght@500;700;900&family=Karla:wght@500;700;800&family=Cabin:wght@500;700&family=Titillium+Web:wght@600;700;900&family=Figtree:wght@500;700;900&family=Lexend:wght@500;700;800&family=Sora:wght@500;700;800&family=Albert+Sans:wght@500;700;900&family=Red+Hat+Display:wght@500;700;900&family=Be+Vietnam+Pro:wght@500;700;900&family=Hind:wght@500;700&family=Kanit:wght@500;700;900&family=Prompt:wght@500;700;900&family=Alfa+Slab+One&family=Passion+One:wght@700;900&family=Titan+One&family=Paytone+One&family=Lilita+One&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-3"
+      href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Rammetto+One&family=Bowlby+One+SC&family=Rowdies:wght@400;700&family=Squada+One&family=Fjalla+One&family=Francois+One&family=Patua+One&family=Changa+One&family=Racing+Sans+One&family=Boogaloo&family=Sigmar+One&family=Bungee+Shade&family=Rubik+Mono+One&family=Dela+Gothic+One&family=Libre+Baskerville:wght@400;700&family=Crimson+Pro:wght@500;700&family=EB+Garamond:wght@500;700&family=Playfair+Display+SC:wght@700;900&family=Spectral:wght@500;700&family=Bitter:wght@500;700;900&family=Vollkorn:wght@500;700;900&family=Yeseva+One&family=Marcellus&family=Cinzel+Decorative:wght@700;900&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-4"
+      href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&family=Fraunces:wght@500;700;900&family=Newsreader:wght@500;700&family=Rozha+One&family=Poiret+One&family=Forum&family=Vidaloka&family=Rufina:wght@400;700&family=Indie+Flower&family=Patrick+Hand&family=Courgette&family=Cookie&family=Yellowtail&family=Allura&family=Alex+Brush&family=Parisienne&family=Marck+Script&family=Kalam:wght@400;700&family=Gloria+Hallelujah&family=Architects+Daughter&family=Rock+Salt&family=Homemade+Apple&family=Bad+Script&family=Handlee&family=Covered+By+Your+Grace&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-5"
+      href="https://fonts.googleapis.com/css2?family=Damion&family=Michroma&family=Rajdhani:wght@500;700&family=Saira:wght@500;700;900&family=Oxanium:wght@500;700;800&family=Electrolize&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@500;700&family=VT323&family=Syncopate:wght@400;700&family=Jura:wght@500;700&family=Aldrich&family=Nosifer&family=Metal+Mania&family=Rye&family=Fascinate&family=Shrikhand&family=Modak&family=Chewy&family=Bubblegum+Sans&family=Bungee+Inline&family=Faster+One&family=Griffy&family=UnifrakturMaguntia&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-6"
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;700;900&family=Noto+Sans:wght@400;700;900&family=PT+Sans:wght@400;700&family=Ubuntu:wght@400;700&family=Dosis:wght@500;700;800&family=Comfortaa:wght@500;700&family=Signika:wght@500;700&family=Catamaran:wght@500;700;900&family=Varela+Round&family=Heebo:wght@400;700;900&family=Overpass:wght@400;700;900&family=Asap:wght@500;700;900&family=Exo:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@500;700;900&family=Jost:wght@500;700;900&family=Epilogue:wght@500;700;900&family=Bricolage+Grotesque:wght@500;700;800&family=Onest:wght@500;700;900&family=Instrument+Sans:wght@500;700&family=Readex+Pro:wght@400;700&family=Candal&family=Carter+One&family=Concert+One&family=Coda:wght@400;800&family=Secular+One&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-7"
+      href="https://fonts.googleapis.com/css2?family=Yanone+Kaffeesatz:wght@500;700&family=Big+Shoulders+Display:wght@700;900&family=Antonio:wght@500;700&family=Saira+Condensed:wght@600;800&family=Barlow+Condensed:wght@600;800&family=Six+Caps&family=Pathway+Gothic+One&family=Cuprum:wght@600;700&family=Black+Han+Sans&family=Seymour+One&family=Bakbak+One&family=Calistoga&family=Potta+One&family=Knewave&family=Bree+Serif&family=PT+Serif:wght@400;700&family=Source+Serif+4:wght@400;700;900&family=Noto+Serif:wght@400;700;900&family=Alegreya:wght@500;700;900&family=Arvo:wght@400;700&family=Rokkitt:wght@500;700;900&family=Domine:wght@500;700&family=Frank+Ruhl+Libre:wght@500;700;900&family=Gelasio:wght@500;700&family=Old+Standard+TT:wght@400;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-8"
+      href="https://fonts.googleapis.com/css2?family=Quattrocento:wght@400;700&family=Sorts+Mill+Goudy&family=Philosopher:wght@400;700&family=Italiana&family=Aboreto&family=Tenor+Sans&family=Bellefair&family=Gilda+Display&family=Arizonia&family=Bilbo+Swash+Caps&family=Calligraffitti&family=Cedarville+Cursive&family=Clicker+Script&family=Dawning+of+a+New+Day&family=Euphoria+Script&family=Grand+Hotel&family=Herr+Von+Muellerhoff&family=Italianno&family=La+Belle+Aurore&family=Leckerli+One&family=Merienda:wght@500;700;900&family=Mr+Dafoe&family=Niconne&family=Nothing+You+Could+Do&family=Pinyon+Script&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <link
+      id="dulos-extra-fonts-9"
+      href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&family=Tektur:wght@500;700;900&family=Goldman:wght@400;700&family=Turret+Road:wght@500;700;800&family=Geo&family=Keania+One&family=Wallpoet&family=Nova+Square&family=Quantico:wght@400;700&family=Major+Mono+Display&family=Syne+Mono&family=Roboto+Mono:wght@400;700&family=Source+Code+Pro:wght@500;700;900&family=Eater&family=Butcherman&family=Jolly+Lodger&family=Pirata+One&family=Grenze+Gotisch:wght@500;700;900&family=Berkshire+Swash&family=Lobster+Two:wght@400;700&family=Limelight&family=Megrim&family=Spicy+Rice&family=Ribeye+Marrow&family=Rubik+Bubbles&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Montserrat:ital,wght@0,700;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Space+Grotesk:wght@600;700&family=Oswald:wght@600;700&family=Permanent+Marker&family=Fira+Code:wght@500;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+  </head>
+  <body class="bg-[#090a0f] text-slate-100 select-none overflow-hidden font-sans antialiased">
+    <div id="root">
+      <!-- Instant First-Paint Splash (replaced automatically when React mounts) -->
+      <div style="position:fixed;inset:0;z-index:9999;background:#060919;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <img src="/splash.jpg" alt="Dulos Editor" style="width:100%;height:100%;object-fit:cover;object-position:center;" />
+      </div>
+    </div>
+    <script>
+      // Capture PWA install prompt early before lazy modals mount
+      window.__pwaDeferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__pwaDeferredPrompt = e;
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Watchdog: if React fails to mount (e.g. stale Chrome Service Worker / cached chunk mismatch),
+      // clear SW caches and reload once automatically instead of freezing on splash.jpg.
+      setTimeout(function () {
+        if (window.__appMounted) return;
+        var recover = async function () {
+          try {
+            if ('serviceWorker' in navigator) {
+              var regs = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(regs.map(function (r) { return r.unregister(); }));
+            }
+            if ('caches' in window) {
+              var keys = await caches.keys();
+              await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+            }
+          } catch (e) {}
+          window.location.reload();
+        };
+
+        var alreadyRetried = false;
+        try {
+          alreadyRetried = sessionStorage.getItem('sw_recovery_reloaded') === '1';
+          if (!alreadyRetried) {
+            sessionStorage.setItem('sw_recovery_reloaded', '1');
+            recover();
+            return;
+          }
+        } catch (e) {}
+
+        var root = document.getElementById('root');
+        if (root && !document.getElementById('splash-recovery-banner')) {
+          var banner = document.createElement('div');
+          banner.id = 'splash-recovery-banner';
+          banner.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:10000;background:rgba(9,10,15,0.92);border:1px solid rgba(255,255,255,0.16);border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:12px;color:#e2e8f0;font-family:sans-serif;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,0.5);';
+          var text = document.createElement('span');
+          text.textContent = 'La app tardó demasiado en iniciar.';
+          var btn = document.createElement('button');
+          btn.textContent = 'Reintentar';
+          btn.style.cssText = 'background:#4f46e5;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-weight:600;cursor:pointer;';
+          btn.onclick = function () {
+            try { sessionStorage.removeItem('sw_recovery_reloaded'); } catch (e) {}
+            recover();
+          };
+          banner.appendChild(text);
+          banner.appendChild(btn);
+          root.appendChild(banner);
+        }
+      }, 6000);
+    </script>
+    <script>
+      // Register Service Worker for PWA installation (web only, skip inside Electron desktop app & Android APK)
+      const isElectronApp = !!(window.electronAPI && window.electronAPI.isElectron) ||
+        navigator.userAgent.toLowerCase().includes('electron');
+      const isCapacitorApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ||
+        !!window.DulosAndroid;
+      if (!isElectronApp && !isCapacitorApp && 'serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('PWA ServiceWorker registered with scope:', registration.scope);
+            })
+            .catch((err) => {
+              console.warn('PWA ServiceWorker registration failed:', err);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

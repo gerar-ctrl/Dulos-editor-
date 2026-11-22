@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Dulos Editor</string>
+    <string name="title_activity_main">Dulos Editor</string>
+    <string name="package_name">com.duloseditor.app</string>
+    <string name="custom_url_scheme">com.duloseditor.app</string>
+</resources>

@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+release/
+
+# Local caches & temporary build files
+.build-cache/
+.dulos-temp/
+.firebase/
+
+# Large desktop FFmpeg binaries (>100MB, excluded from Git)
+build-resources/bin/
+
+# Android build outputs & local config
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.keystore
+*.jks
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
