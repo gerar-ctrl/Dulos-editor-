@@ -1,6 +1,6 @@
-# 🎬 Dulos editor - Editor de Video Web, Escritorio (PC) & Android
+# 🎬 Dulos editor — Editor de Video Multipista para PC (Windows), Android y Web
 
-**Dulos editor** es una aplicación de edición de video no lineal profesional y responsiva disponible para **Windows (PC)**, **Android (APK)** y **Web/PWA**, diseñada con aceleración por hardware mediante **WebGL / Shaders GLSL**, **WebCodecs**, **Web Audio API** e **IndexedDB**.
+**Dulos editor** es un editor de video no lineal multipista acelerado por GPU (**WebGL / Shaders GLSL**), con **Web Audio API**, exportación nativa con **FFmpeg** en escritorio (Windows) y **WebCodecs / MP4 Muxer** en navegador y Android.
 
 ---
 
@@ -8,87 +8,80 @@
 
 Descargá los instaladores oficiales desde la sección de [Releases](https://github.com/gerar-ctrl/Dulos-editor-/releases/tag/v1.0.0):
 
-- 💻 **Windows (PC - Instalador x64):** [Dulos-editor-Setup-1.0.0.exe](https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-editor-Setup-1.0.0.exe)
-- 📱 **Android (APK):** [Dulos-Editor-Android.apk](https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-Editor-Android.apk)
+- 💻 **Windows (PC x64 — Instalador con FFmpeg integrado):** [Dulos-editor-Setup-1.0.0.exe](https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-editor-Setup-1.0.0.exe)
+- 📱 **Android (APK nativo con Capacitor):** [Dulos-Editor-Android.apk](https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-Editor-Android.apk)
 
 ---
 
-## 🚀 Características Principales
+## ✨ Funcionalidades Reales de la Aplicación
 
-### 1. Motor Gráfico y Renderizado en Tiempo Real (60 FPS)
-- **Shaders GLSL WebGL:**
-  - **Etalonaje y Color:** Brillo, Contraste, Saturación, Exposición, Nitidez (convolución 3x3), Sombras, Iluminaciones, Temperatura de color y Viñeta.
-  - **Filtros Preestablecidos:** Cinematográfico, Vintage/Retro, Blanco y Negro, Vibrante, Frío, Cálido y Nocturno.
-  - **Chroma Key (Pantalla Verde):** Selector cuentagotas de color con controles de Tolerancia, Suavizado de bordes (*feather*) y Supresión de derrame (*despill*).
-  - **Máscaras Geométricas:** Lineal (pantalla dividida), Círculo, Rectángulo y Estrella con inversión y difuminado.
-  - **Efectos Visuales (VFX):** Glitch RGB split, Aberración cromática, Vibración de cámara (*shake*), Grano de película (*film grain*) y Resplandor Neón.
-  - **Transiciones:** Disolución cruzada (*Cross Dissolve*), Barrido direccional (*Wipe*), Zoom Dinámico y Flash Blanco.
+### 1. Motor Gráfico WebGL / GLSL en Tiempo Real (con respaldo Canvas 2D)
+- **285 filtros LUT y presets de color** clasificados por categorías (*Cine, Vintage, Cyber, Naturaleza, Blanco y Negro / Duotono, Retrato / Editorial y Atmósfera / Arte*) con control de intensidad.
+- **Etalonaje y corrección de color:** Brillo, Contraste, Saturación, Exposición, Nitidez, Iluminaciones, Sombras, Temperatura, Tinte, Viñeta y **ajustes HSL selectivos** (Rojo, Verde, Azul y Amarillo).
+- **290 efectos visuales (VFX) por shader:** Fuego y llamas, Destellos y halos, Clima y partículas, Naturaleza, Glitch y Cyber, Lentes y óptica, Arte y cine retro, con control de intensidad y velocidad.
+- **206 transiciones:** Cámara/Desenfoque, Luz y Cine, 3D y Formas, Glitch y Ondas, Barridos y Cortes con duración ajustable.
+- **Chroma Key (Pantalla Verde):** Cuentagotas de color, Tolerancia, Suavizado de bordes (*feather*) y Supresión de derrame (*despill*).
+- **9 formas de máscara geométrica:** Lineal, Espejo, Círculo, Rectángulo, Estrella, Diamante, Corazón, Hexágono y Triángulo (con inversión y difuminado).
+- **Transformación directa en lienzo:** Gizmo interactivo para mover, escalar (proporcional o libre), rotar, voltear horizontal/verticalmente, ajustar opacidad, modo de ajuste (*contain / cover / fill*), **recorte de pantalla interactivo** y **6 modos de fusión** (*Normal, Overlay, Multiply, Screen, Lighten, Darken*).
+- **Fondo del lienzo personalizable:** Color sólido, imagen o desenfoque.
 
-### 2. Edición de Video y Línea de Tiempo Multipista
-- Pista principal magnética y pistas secundarias para capas superpuestas (PIP), textos y música.
-- **Herramientas de Corte:**
-  - **Dividir (Split):** Corte exacto en el cabezal de reproducción.
-  - **Recortar extremos (Trim):** Tiradores interactivos para ajustar inicio y final de clips.
-  - **Duplicar y Eliminar:** Gestión ágil de clips en la línea de tiempo.
-  - **Congelar fotograma (Freeze frame):** Extracción de fotogramas congelados de duración configurable.
-  - **Invertir clip (Reverse):** Reproducción hacia atrás en video.
-- **Control de Velocidad:**
-  - Ajuste continuo de 0.1x a 10x.
-  - **Corrección de tono (Pitch Correction):** Preserva el timbre natural de la voz al cambiar la velocidad.
-  - Curvas de velocidad Bézier preconfiguradas (Montaje, Bullet Time, etc.).
-  - Interpolación de fotogramas intermedios (*Optical Flow*).
-- **Animaciones y Keyframes:**
-  - Animaciones de Entrada (Fade, Zoom In, Slide, Bounce, Spin), Salida y Bucle (Heartbeat, Flotación).
-  - Keyframes personalizados para posición (X, Y), escala, rotación y opacidad.
+### 2. Línea de Tiempo Multipista y Montaje
+- Pista principal de video, pistas superpuestas (**PIP / Picture-in-Picture**), pistas de audio y pistas de texto.
+- **Herramientas de corte y edición:** Dividir (*Split*), Recortar extremos izquierdo/derecho (*Trim*), Duplicar, Eliminar, Reordenar clips, Congelar fotograma (*Freeze Frame*) e Invertir clip (*Reverse*).
+- **Control de velocidad:** Velocidad lineal (desde cámara lenta `0.1x` hasta `100x`), **curvas de velocidad Bézier** y preservación del tono de voz (*Pitch Correction*).
+- **Animaciones de clips:** **34 animaciones de Entrada**, **26 de Salida** y **26 de Bucle/Combo** (3D, zoom, deslizamientos, rebotes, glitch, cámara en mano, etc.).
+- **Keyframes (Puntos Clave):** Animación por fotogramas clave de posición, escala, rotación y opacidad con interpolación (*linear, easeIn, easeOut, easeInOut*).
+- **Gestión de proyectos:** Múltiples proyectos guardados localmente en `IndexedDB` e historial de **Deshacer / Rehacer**.
 
-### 3. Motor de Audio Profesional (Web Audio API)
-- Mezcla multipista con ganancia de volumen de hasta **1000%**.
-- **Curvas de envolvente de atenuación:** *Fade In* y *Fade Out* configurables en segundos y representadas visualmente sobre la forma de onda.
-- **Visualizador de forma de onda (Waveform):** Cálculo y renderizado en tiempo real sobre los clips en el timeline.
-- **Separar Audio de Video:** Extracción instantánea a pista de audio independiente silenciando el video original.
-- **Filtros de Voz:** Efectos de voz Grave, Aguda, Robot, Radio y Eco espacial.
-- **Detección de Ritmo (Beats):** Detección de picos y transitorios de música para edición rítmica.
-- **Grabadora de Voz:** Grabación directa sincronizada con el micrófono del dispositivo.
+### 3. Motor de Audio y Doblaje (Web Audio API)
+- Mezcla multipista con ganancia de volumen de hasta **1000%** por clip.
+- **Curva de envolvente de volumen por pista (tecla `V`):** Nodos interactivos de volumen a lo largo de toda la pista (0% a 200%).
+- **Fade In / Fade Out** configurables y visualización de **forma de onda (*Waveform*)** en los clips.
+- **Separar audio de video** a una pista independiente.
+- **Doblaje / Grabadora de voz en tiempo real:** Barra dedicada para grabar voz con el micrófono directamente sincronizada sobre la línea de tiempo.
+- **Más de 50 filtros de voz** en 6 categorías: *Personas y Edades, Divertidos y Animales, Ciencia Ficción y Robots, Terror y Fantasía, Dispositivos y Retro, y Espacios y Efectos* (eco, cueva, catedral, estadio, bajo el agua, etc.).
 
-### 4. Textos, Tipografía y Subtítulos con IA
-- Soporte para fuentes de Google (Bebas Neue, Montserrat, Inter, Playfair Display, Space Grotesk, Oswald, etc.).
-- Colores de relleno, degradados, trazos/contornos, sombras proyectadas y cajas de fondo con bordes redondeados.
-- **Subtítulos automáticos:** Reconocimiento de voz en tiempo real (*SpeechRecognition API*) con resaltado de palabras.
-- **Texto a Voz (TTS):** Generador de locución y narración (*SpeechSynthesis API*) con control de tono, velocidad e idioma.
+### 4. Textos y Tipografía
+- **258 fuentes tipográficas** organizadas en 6 categorías (*Modernas, Impacto, Elegantes, Manuscritas, Tecno y Artísticas*).
+- **Edición directa sobre el lienzo** (*Inline Text Editor*).
+- Relleno sólido o **degradado**, alineación, espaciado de letras y palabras, interlineado, **texto curvo**, contorno/trazo, sombra configurable y caja de fondo con opacidad, relleno y bordes redondeados.
+- Animaciones de texto de **entrada, salida y bucle** (máquina de escribir, rebote, ola, latido, flotación, etc.).
 
-### 5. Exportación de Video por Hardware (WebCodecs & MP4 Muxer)
-- **Resoluciones:** 480p, 720p, 1080p, 2K y 4K con adaptación a relaciones de aspecto (9:16, 16:9, 1:1, 4:5, 21:9).
-- **Fotogramas por Segundo (FPS):** 24, 25, 30, 50 y 60 FPS.
-- **Estimación en Tiempo Real:** Cálculo dinámico del tamaño final en MB antes de exportar.
-- **Codificación por GPU:** Exportación H.264/AVC sin congelar la interfaz y con descarga directa automática.
+### 5. Exportación Multiplataforma (Video MP4 y Audio MP3/WAV)
+- **Formatos de salida:** Video **MP4 (H.264/AVC)** y exportación de solo audio en **MP3** (128 / 192 / 320 kbps) y **WAV**.
+- **Resoluciones:** `360p`, `480p`, `720p`, `1080p`, `2K` y `4K`, con relaciones de aspecto `Auto`, `9:16`, `16:9`, `1:1`, `4:5`, `21:9`, `4:3` y `Libre`.
+- **FPS y calidad:** `24`, `25`, `30`, `50` y `60 FPS`, selector de calidad (*Baja, Media, Alta*) y estimación en tiempo real del tamaño final en MB.
+- **En PC (Windows — Electron):**
+  - Doble motor de exportación: **FFmpeg nativo integrado** o **WebCodecs**.
+  - **Smart Stream Copy:** Copia directa sin recodificación cuando no hay ediciones visuales para exportaciones ultrarrápidas.
+  - Lectura de archivos locales por streaming HTTP Range (sin duplicar videos pesados en el disco `C:`), elección directa de carpeta de guardado y **modo seguro de GPU** (`--safe-gpu`).
+- **En Android (APK — Capacitor + Puente Nativo):**
+  - Guardado nativo en galería/almacenamiento (`Dulos Editor` vía `MediaStore`).
+  - Pantalla encendida automáticamente durante la exportación.
+  - Botones para abrir o compartir el video/audio exportado directamente (incluido **WhatsApp**) y recepción de archivos compartidos desde otras apps.
 
 ---
 
-## 🛠️ Instalación y Ejecución Local
+## 🛠️ Desarrollo y Compilación Local
 
 ```bash
 # 1. Instalar dependencias
 npm install
 
-# 2. Iniciar servidor de desarrollo (con cabeceras COOP/COEP habilitadas)
+# 2. Ejecutar en modo desarrollo web
 npm run dev
 
-# 3. Compilar para producción
+# 3. Compilar la aplicación web
 npm run build
 
-# 4. Previsualizar la compilación
-npm run preview
+# 4. Ejecutar versión de escritorio (Electron)
+npm run electron:start
+
+# 5. Generar instalador de Windows (.exe)
+npm run dist:win
+
+# 6. Sincronizar y compilar APK de Android
+npm run android:apk
 ```
 
----
-
-## 🌐 Despliegue en Dominio `editordevideos`
-
-El proyecto incluye las cabeceras HTTP de seguridad requeridas por los navegadores para WebCodecs y `SharedArrayBuffer`:
-- `Cross-Origin-Opener-Policy: same-origin`
-- `Cross-Origin-Embedder-Policy: require-corp`
-
-Archivos de despliegue listos para usar:
-1. `public/_headers` (para Cloudflare Pages, Netlify y plataformas Jamstack)
-2. `server.js` (servidor de producción Node.js con cabeceras COOP/COEP)
-3. `nginx.conf` (configuración de servidor NGINX optimizada)
+> **Nota para compilación de PC:** Para generar el instalador de escritorio (`npm run dist:win`), colocá `ffmpeg.exe` y `ffprobe.exe` en `build-resources/bin/` (excluidos del repositorio por superar el límite de 100 MB de GitHub).
