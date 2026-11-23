@@ -123,7 +123,7 @@ export const TimelineToolbar: React.FC = () => {
         )}
 
         {/* Reverse Clip */}
-        {isVideo && (
+        {(isVideo || selectedClip?.type === 'audio') && (
           <button
             onClick={() => selectedClipId && reverseClip(selectedClipId)}
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md font-medium transition-colors ${
@@ -131,10 +131,10 @@ export const TimelineToolbar: React.FC = () => {
                 ? 'bg-amber-500/20 text-amber-300'
                 : 'text-slate-200 hover:bg-white/10'
             }`}
-            title="Invertir video hacia atrás (Reverse)"
+            title="Reproducir en reversa (audio y video)"
           >
             <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
-            <span>Invertir</span>
+            <span>Reversa</span>
           </button>
         )}
 

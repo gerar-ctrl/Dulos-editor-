@@ -26,6 +26,17 @@ interface ActivePreviewState {
   onStop?: () => void;
 }
 
+interface ActiveReversedPlayback {
+  source: AudioBufferSourceNode;
+  gainNode: GainNode;
+  filterHandle?: VoiceFilterGraphHandle;
+  appliedFilter: VoiceFilter;
+  speed: number;
+  startedCtxTime: number;
+  startedBufferOffset: number;
+  lastGain: number;
+}
+
 function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
   const numChannels = buffer.numberOfChannels;
   const sampleRate = buffer.sampleRate;
@@ -87,6 +98,11 @@ export class AudioEngine {
   private elementSourceMap = new WeakMap<HTMLMediaElement, MediaElementAudioSourceNode>();
   private audioBufferCache = new Map<string, AudioBuffer>();
   private static readonly MAX_AUDIO_BUFFER_CACHE = 6;
+  private reversedAudioBufferCache = new Map<string, AudioBuffer>();
+  private static readonly MAX_REVERSED_BUFFER_CACHE = 4;
+  private reversedAudioLoading = new Set<string>();
+  private reversedAudioFailed = new Set<string>();
+  private activeReversedPlaybacks = new Map<string, ActiveReversedPlayback>();
   private activePreview: ActivePreviewState | null = null;
   private previewRequestToken = 0;
 
@@ -604,6 +620,230 @@ export class AudioEngine {
     const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
     this.analyser.getByteFrequencyData(dataArray);
     return dataArray;
+  }
+
+  private cacheReversedAudioBuffer(url: string, buffer: AudioBuffer) {
+    if (this.reversedAudioBufferCache.has(url)) {
+      this.reversedAudioBufferCache.delete(url);
+    }
+    this.reversedAudioBufferCache.set(url, buffer);
+    while (this.reversedAudioBufferCache.size > AudioEngine.MAX_REVERSED_BUFFER_CACHE) {
+      const oldestKey = this.reversedAudioBufferCache.keys().next().value;
+      if (!oldestKey) break;
+      this.reversedAudioBufferCache.delete(oldestKey);
+    }
+  }
+
+  public async loadReversedAudioBuffer(url: string): Promise<AudioBuffer | null> {
+    if (!url || url.startsWith('procedural://')) return null;
+    const cached = this.reversedAudioBufferCache.get(url);
+    if (cached) return cached;
+    if (this.reversedAudioFailed.has(url) || this.reversedAudioLoading.has(url)) {
+      return null;
+    }
+
+    this.reversedAudioLoading.add(url);
+    try {
+      const original = await this.loadAudioBuffer(url);
+      const ctx = this.init();
+      const reversed = ctx.createBuffer(
+        original.numberOfChannels,
+        original.length,
+        original.sampleRate
+      );
+      for (let ch = 0; ch < original.numberOfChannels; ch++) {
+        const src = original.getChannelData(ch);
+        const dst = reversed.getChannelData(ch);
+        const lastIdx = src.length - 1;
+        for (let i = 0; i < src.length; i++) {
+          dst[i] = src[lastIdx - i];
+        }
+      }
+      this.cacheReversedAudioBuffer(url, reversed);
+      return reversed;
+    } catch {
+      this.reversedAudioFailed.add(url);
+      return null;
+    } finally {
+      this.reversedAudioLoading.delete(url);
+    }
+  }
+
+  public preloadReversedAudio(url?: string) {
+    if (!url || url.startsWith('procedural://')) return;
+    if (
+      this.reversedAudioBufferCache.has(url) ||
+      this.reversedAudioLoading.has(url) ||
+      this.reversedAudioFailed.has(url)
+    ) {
+      return;
+    }
+    void this.loadReversedAudioBuffer(url);
+  }
+
+  public stopReversedClipAudio(clipId: string) {
+    const active = this.activeReversedPlaybacks.get(clipId);
+    if (!active) return;
+    this.activeReversedPlaybacks.delete(clipId);
+    try {
+      active.source.onended = null;
+      active.source.stop();
+    } catch {}
+    try {
+      active.source.disconnect();
+    } catch {}
+    if (active.filterHandle) {
+      try {
+        active.filterHandle.dispose();
+      } catch {}
+    }
+    try {
+      active.gainNode.disconnect();
+    } catch {}
+  }
+
+  public stopAllReversedClipAudio() {
+    if (this.activeReversedPlaybacks.size === 0) return;
+    for (const clipId of Array.from(this.activeReversedPlaybacks.keys())) {
+      this.stopReversedClipAudio(clipId);
+    }
+  }
+
+  public syncReversedClipAudio(
+    clip: AudioClip | VideoClip,
+    currentTime: number,
+    playing: boolean,
+    trackMuted = false,
+    trackVolume = 100
+  ) {
+    const audio = clip.audio;
+    const isInside =
+      currentTime >= clip.startTime &&
+      currentTime < clip.startTime + clip.duration - 0.01;
+    const isMuted =
+      !audio ||
+      trackMuted ||
+      audio.isMuted ||
+      Boolean(clip.isFrozen) ||
+      !clip.sourceUrl ||
+      clip.sourceUrl.startsWith('procedural://');
+
+    if (!playing || !isInside || isMuted) {
+      this.stopReversedClipAudio(clip.id);
+      return;
+    }
+
+    const reversedBuffer = this.reversedAudioBufferCache.get(clip.sourceUrl);
+    if (!reversedBuffer) {
+      this.preloadReversedAudio(clip.sourceUrl);
+      return;
+    }
+
+    const ctx = this.init();
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
+    const localTime = Math.max(0, currentTime - clip.startTime);
+    const remainingTime = Math.max(0, clip.duration - localTime);
+
+    let envelopeMultiplier = 1.0;
+    if (audio.fadeInDuration > 0 && localTime < audio.fadeInDuration) {
+      envelopeMultiplier *= Math.max(
+        0,
+        Math.min(1, localTime / audio.fadeInDuration)
+      );
+    }
+    if (audio.fadeOutDuration > 0 && remainingTime < audio.fadeOutDuration) {
+      envelopeMultiplier *= Math.max(
+        0,
+        Math.min(1, remainingTime / audio.fadeOutDuration)
+      );
+    }
+
+    const trackGain = Math.max(0, Math.min(2, trackVolume / 100));
+    const targetGain = Math.max(
+      0,
+      Math.min(10, ((audio.volume * trackGain) / 100) * envelopeMultiplier)
+    );
+
+    const speed = Math.max(0.05, Math.min(16, clip.speed || 1));
+    const bufDur = reversedBuffer.duration;
+    const clipSpan = clip.duration * speed;
+    const sourceEnd = Math.min(bufDur, (clip.sourceStartTime || 0) + clipSpan);
+    const sliceStart = Math.max(0, bufDur - sourceEnd);
+    const targetOffset = Math.max(
+      0,
+      Math.min(bufDur - 0.01, sliceStart + localTime * speed)
+    );
+    const remainingBufferSec = Math.max(
+      0.02,
+      Math.min(bufDur - targetOffset, remainingTime * speed)
+    );
+
+    const appliedFilter: VoiceFilter = audio.voiceFilter || 'none';
+    const existing = this.activeReversedPlaybacks.get(clip.id);
+    if (existing) {
+      const elapsedCtx = Math.max(0, ctx.currentTime - existing.startedCtxTime);
+      const expectedOffset = existing.startedBufferOffset + elapsedCtx * existing.speed;
+      const drift = Math.abs(expectedOffset - targetOffset);
+      if (
+        drift < 0.25 &&
+        Math.abs(existing.speed - speed) < 0.01 &&
+        existing.appliedFilter === appliedFilter
+      ) {
+        if (Math.abs(existing.lastGain - targetGain) > 0.002) {
+          existing.gainNode.gain.setTargetAtTime(
+            targetGain,
+            ctx.currentTime,
+            0.02
+          );
+          existing.lastGain = targetGain;
+        }
+        return;
+      }
+      this.stopReversedClipAudio(clip.id);
+    }
+
+    try {
+      const source = ctx.createBufferSource();
+      source.buffer = reversedBuffer;
+      source.playbackRate.value = speed;
+
+      const gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(targetGain, ctx.currentTime);
+      source.connect(gainNode);
+
+      let filterHandle: VoiceFilterGraphHandle | undefined;
+      if (appliedFilter !== 'none') {
+        filterHandle = buildVoiceFilterGraph(ctx, gainNode, appliedFilter);
+        filterHandle.output.connect(this.masterGain!);
+      } else {
+        gainNode.connect(this.masterGain!);
+      }
+
+      const entry: ActiveReversedPlayback = {
+        source,
+        gainNode,
+        filterHandle,
+        appliedFilter,
+        speed,
+        startedCtxTime: ctx.currentTime,
+        startedBufferOffset: targetOffset,
+        lastGain: targetGain,
+      };
+      this.activeReversedPlaybacks.set(clip.id, entry);
+
+      source.onended = () => {
+        if (this.activeReversedPlaybacks.get(clip.id) === entry) {
+          this.stopReversedClipAudio(clip.id);
+        }
+      };
+
+      source.start(0, targetOffset, remainingBufferSec);
+    } catch {
+      this.stopReversedClipAudio(clip.id);
+    }
   }
 }
 

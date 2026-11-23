@@ -603,12 +603,12 @@ export class ElectronFFmpegExporter {
       project.settings.customWidth,
       project.settings.customHeight
     );
-    const fps = settings.fps;
+    const fps = Math.min(30, Math.max(1, settings.fps || 30)) as 24 | 25 | 30;
     const totalDuration = Math.max(0.1, project.settings.duration);
     const totalFrames = Math.max(1, Math.ceil(totalDuration * fps));
     const bitrateMbps = getRecommendedBitrateMbps(
       settings.resolution,
-      settings.fps,
+      fps,
       settings.quality,
       settings.customBitrateMbps
     );

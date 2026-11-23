@@ -182,6 +182,7 @@ export const EditorBottomBar: React.FC<EditorBottomBarProps> = ({
     : null;
 
   const isVideo = selectedClip?.type === 'video';
+  const isAudio = selectedClip?.type === 'audio';
   const isVisual =
     selectedClip?.type === 'video' || selectedClip?.type === 'image';
   const isAnimatable =
@@ -443,11 +444,25 @@ export const EditorBottomBar: React.FC<EditorBottomBarProps> = ({
     },
     {
       id: 'reverseRoot',
-      label: 'Invertir',
+      label: 'Reversa',
       icon: RotateCcw,
       action: () => {
-        const id = ensureVisualClipSelected();
-        if (id) reverseClip(id);
+        const now = useEditorStore.getState().currentTime;
+        const reversibleAtPlayhead = allClips.find(
+          (c) =>
+            (c.type === 'video' || c.type === 'audio') &&
+            now >= c.startTime &&
+            now <= c.startTime + c.duration
+        );
+        const fallback =
+          reversibleAtPlayhead ||
+          allClips.find((c) => c.type === 'video' || c.type === 'audio');
+        if (fallback) {
+          selectClip(fallback.id);
+          reverseClip(fallback.id);
+        } else {
+          showToast('⚠️ Agrega un clip de video o audio para usar Reversa');
+        }
       },
     },
     {
@@ -585,6 +600,10 @@ export const EditorBottomBar: React.FC<EditorBottomBarProps> = ({
       icon: Sparkles,
       action: () => onOpenTool('effects'),
       hidden: !isVisual,
+      active:
+        isVisual &&
+        (selectedClip as any)?.effect?.type &&
+        (selectedClip as any)?.effect?.type !== 'none',
     },
     {
       id: 'filters',
@@ -624,10 +643,10 @@ export const EditorBottomBar: React.FC<EditorBottomBarProps> = ({
     },
     {
       id: 'reverse',
-      label: 'Invertir',
+      label: 'Reversa',
       icon: RotateCcw,
       action: () => selectedClipId && reverseClip(selectedClipId),
-      hidden: !isVideo,
+      hidden: !isVideo && !isAudio,
       active: selectedClip?.isReversed,
     },
     {

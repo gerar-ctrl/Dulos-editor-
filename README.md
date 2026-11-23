@@ -55,8 +55,8 @@ Descargá los instaladores oficiales desde la sección de [Releases](https://git
 
 ### 5. Exportación Multiplataforma (Video MP4 y Audio MP3/WAV)
 - **Formatos de salida:** Video **MP4 (H.264/AVC)** y exportación de solo audio en **MP3** (128 / 192 / 320 kbps) y **WAV**.
-- **Resoluciones:** `360p`, `480p`, `720p`, `1080p`, `2K` y `4K`, con relaciones de aspecto `Auto`, `9:16`, `16:9`, `1:1`, `4:5`, `21:9`, `4:3` y `Libre`.
-- **FPS y calidad:** `24`, `25`, `30`, `50` y `60 FPS`, selector de calidad (*Baja, Media, Alta*) y estimación en tiempo real del tamaño final en MB.
+- **Resoluciones:** `360p`, `480p`, `720p` y `1080p` (Full HD), con relaciones de aspecto `Auto`, `9:16`, `16:9`, `1:1`, `4:5`, `21:9`, `4:3` y `Libre`.
+- **FPS y calidad:** `24`, `25` y `30 FPS`, selector de calidad (*Baja, Media, Alta*) y estimación en tiempo real del tamaño final en MB.
 - **En PC (Windows — Electron):**
   - Doble motor de exportación: **FFmpeg nativo integrado** o **WebCodecs**.
   - **Smart Stream Copy:** Copia directa sin recodificación cuando no hay ediciones visuales para exportaciones ultrarrápidas.

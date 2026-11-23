@@ -225,6 +225,18 @@ export const ToolDrawer: React.FC<ToolDrawerProps> = ({
     onClose();
   };
 
+  const handleSplitRevoked = () => {
+    globalAudioEngine.stopVoiceFilterPreview();
+    setInlineEditingTextClipId(null);
+    if (initialSnapshotRef.current) {
+      commitToolSession(
+        initialSnapshotRef.current.project,
+        initialSnapshotRef.current.historySnapshot
+      );
+    }
+    onClose();
+  };
+
   const handleCancel = () => {
     globalAudioEngine.stopVoiceFilterPreview();
     setInlineEditingTextClipId(null);
@@ -399,8 +411,9 @@ export const ToolDrawer: React.FC<ToolDrawerProps> = ({
       case 'keyframes':
         return 'Fotogramas Clave (Keyframes)';
       case 'transitions':
+        return 'Transiciones';
       case 'effects':
-        return 'Transiciones y Efectos Visuales (FX)';
+        return 'Efectos Visuales (FX)';
       case 'format':
         return 'Edición de Tamaño de Pantalla y Formato';
       case 'canvas':
@@ -875,12 +888,20 @@ export const ToolDrawer: React.FC<ToolDrawerProps> = ({
         renderNoClipFallback()
       );
     }
-    if (toolId === 'transitions' || toolId === 'effects') {
+    if (toolId === 'transitions') {
       return activeVisualClip ? (
         <TransitionsTab
           clip={activeVisualClip}
-          initialSubTab={toolId === 'effects' ? 'fx' : 'transitions'}
+          mode="transitions"
+          onSplitRevoked={handleSplitRevoked}
         />
+      ) : (
+        renderNoClipFallback()
+      );
+    }
+    if (toolId === 'effects') {
+      return activeVisualClip ? (
+        <TransitionsTab clip={activeVisualClip} mode="fx" />
       ) : (
         renderNoClipFallback()
       );

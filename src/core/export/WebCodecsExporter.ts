@@ -1044,8 +1044,8 @@ export class WebCodecsExporter {
               'avc1.42001f', // Baseline Level 3.1
             ]
         : [
-            'avc1.640034', // High Profile Level 5.2 (up to 4K60)
-            'avc1.640033', // High Profile Level 5.1 (up to 4K30)
+            'avc1.640034', // High Profile Level 5.2
+            'avc1.640033', // High Profile Level 5.1
             'avc1.4d0034', // Main Profile Level 5.2
             'avc1.4d0033', // Main Profile Level 5.1
             'avc1.64002a', // High Profile Level 4.2
@@ -1149,12 +1149,12 @@ export class WebCodecsExporter {
       project.settings.customWidth,
       project.settings.customHeight
     );
-    const fps = settings.fps;
+    const fps = Math.min(30, Math.max(1, settings.fps || 30)) as 24 | 25 | 30;
     const duration = Math.max(1, project.settings.duration);
     const totalFrames = Math.max(1, Math.ceil(duration * fps));
     const bitrateMbps = getRecommendedBitrateMbps(
       settings.resolution,
-      settings.fps,
+      fps,
       settings.quality,
       settings.customBitrateMbps
     );

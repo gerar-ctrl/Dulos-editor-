@@ -915,15 +915,13 @@ export const ExportModal: React.FC = () => {
                         {dimensions.width}x{dimensions.height} px
                       </span>
                     </div>
-                    <div className="grid grid-cols-6 gap-1.5">
+                    <div className="grid grid-cols-4 gap-1.5">
                       {(
                         [
                           '360p',
                           '480p',
                           '720p',
                           '1080p',
-                          '2k',
-                          '4k',
                         ] as ExportResolution[]
                       ).map((res) => (
                         <button
@@ -946,8 +944,8 @@ export const ExportModal: React.FC = () => {
                     <label className="text-slate-400 font-semibold mb-1.5 block">
                       Tasa de Fotogramas (FPS)
                     </label>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {([24, 25, 30, 50, 60] as ExportFPS[]).map((f) => (
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {([24, 25, 30] as ExportFPS[]).map((f) => (
                         <button
                           key={f}
                           onClick={() => setFps(f)}

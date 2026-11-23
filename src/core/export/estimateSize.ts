@@ -20,8 +20,6 @@ export function getResolutionDimensions(
   else if (resolution === '480p') baseHeight = 480;
   else if (resolution === '720p') baseHeight = 720;
   else if (resolution === '1080p') baseHeight = 1080;
-  else if (resolution === '2k') baseHeight = 1440;
-  else if (resolution === '4k') baseHeight = 2160;
 
   let width = Math.round((baseHeight * 16) / 9);
   let height = baseHeight;
@@ -76,15 +74,13 @@ export function getRecommendedBitrateMbps(
     '480p': 2.5,
     '720p': 5.0,
     '1080p': 10.0,
-    '2k': 20.0,
-    '4k': 45.0,
   };
 
   let bitrate = baseBitrates[resolution] || 10.0;
 
-  // FPS multiplier (60fps needs ~30% more bitrate than 30fps)
-  if (fps >= 50) {
-    bitrate *= 1.35;
+  // Slightly lower bitrate for 24/25fps vs 30fps
+  if (fps <= 25) {
+    bitrate *= 0.9;
   }
 
   // Quality multiplier

@@ -29,6 +29,7 @@ import {
   Layers,
   Settings,
   Zap,
+  Wand2,
 } from 'lucide-react';
 
 export const InspectorPanel: React.FC = () => {
@@ -63,7 +64,8 @@ export const InspectorPanel: React.FC = () => {
       return [
         { id: 'transform', label: 'Transformar', icon: Move },
         { id: 'animations', label: 'Animación', icon: Zap },
-        { id: 'transitions', label: 'Transición / FX', icon: Layers },
+        { id: 'transitions', label: 'Transiciones', icon: Layers },
+        { id: 'effects', label: 'Efectos FX', icon: Wand2 },
         { id: 'color', label: 'Filtros / Color', icon: Palette },
         { id: 'speed', label: 'Velocidad', icon: Gauge },
         { id: 'chroma', label: 'Croma', icon: Sparkles },
@@ -76,7 +78,8 @@ export const InspectorPanel: React.FC = () => {
       return [
         { id: 'transform', label: 'Transformar', icon: Move },
         { id: 'animations', label: 'Animación', icon: Zap },
-        { id: 'transitions', label: 'Transición / FX', icon: Layers },
+        { id: 'transitions', label: 'Transiciones', icon: Layers },
+        { id: 'effects', label: 'Efectos FX', icon: Wand2 },
         { id: 'color', label: 'Filtros / Color', icon: Palette },
         { id: 'chroma', label: 'Croma', icon: Sparkles },
         { id: 'mask', label: 'Máscaras', icon: Crop },
@@ -195,7 +198,12 @@ export const InspectorPanel: React.FC = () => {
         {selectedClip &&
           activeInspectorTab === 'transitions' &&
           (selectedClip.type === 'video' || selectedClip.type === 'image') && (
-            <TransitionsTab clip={selectedClip as VideoClip} />
+            <TransitionsTab clip={selectedClip as VideoClip} mode="transitions" />
+          )}
+        {selectedClip &&
+          activeInspectorTab === 'effects' &&
+          (selectedClip.type === 'video' || selectedClip.type === 'image') && (
+            <TransitionsTab clip={selectedClip as VideoClip} mode="fx" />
           )}
       </div>
     </div>

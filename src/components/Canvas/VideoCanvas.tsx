@@ -1268,6 +1268,9 @@ export const VideoCanvas: React.FC = () => {
           }
 
         let renderedAnyVisual = false;
+        if (!playing) {
+          globalAudioEngine.stopAllReversedClipAudio();
+        }
 
         // Process all tracks
         currentProject.tracks.forEach((track) => {
@@ -1283,6 +1286,29 @@ export const VideoCanvas: React.FC = () => {
             if (clip.type === 'audio') {
               const aClip = clip as AudioClip;
               const audioEl = audioElementsMap.current.get(clip.id);
+              if (aClip.isReversed) {
+                if (audioEl) {
+                  if (!audioEl.paused) audioEl.pause();
+                  if (!audioEl.muted) audioEl.muted = true;
+                }
+                const timeUntilAudioStart = clip.startTime - time;
+                if (
+                  track.isVisible &&
+                  timeUntilAudioStart > 0 &&
+                  timeUntilAudioStart <= 2.5
+                ) {
+                  globalAudioEngine.preloadReversedAudio(aClip.sourceUrl);
+                }
+                globalAudioEngine.syncReversedClipAudio(
+                  aClip,
+                  time,
+                  playing,
+                  track.isMuted || !track.isVisible,
+                  evaluateTrackVolumeAtTime(track, time)
+                );
+                return;
+              }
+              globalAudioEngine.stopReversedClipAudio(clip.id);
               if (audioEl) {
                 if (isInside && track.isVisible) {
                   const localTime = Math.max(0, time - clip.startTime);
@@ -1392,6 +1418,7 @@ export const VideoCanvas: React.FC = () => {
             if (!track.isVisible) {
               const vid = videoElementsMap.current.get(clip.id);
               if (vid && !vid.paused) vid.pause();
+              globalAudioEngine.stopReversedClipAudio(clip.id);
               return;
             }
 
@@ -1435,14 +1462,31 @@ export const VideoCanvas: React.FC = () => {
                     applyPreservesPitch(video, vClip.audio.preservesPitch ?? true);
                   }
 
-                  globalAudioEngine.updateFadeEnvelopes(
-                    clip.id,
-                    vClip,
-                    time,
-                    track.isMuted,
-                    video,
-                    evaluateTrackVolumeAtTime(track, time)
-                  );
+                  if (vClip.isReversed) {
+                    if (video.preload !== 'auto') {
+                      video.preload = 'auto';
+                    }
+                    if (!video.muted) {
+                      video.muted = true;
+                    }
+                    globalAudioEngine.syncReversedClipAudio(
+                      vClip,
+                      time,
+                      playing,
+                      track.isMuted,
+                      evaluateTrackVolumeAtTime(track, time)
+                    );
+                  } else {
+                    globalAudioEngine.stopReversedClipAudio(clip.id);
+                    globalAudioEngine.updateFadeEnvelopes(
+                      clip.id,
+                      vClip,
+                      time,
+                      track.isMuted,
+                      video,
+                      evaluateTrackVolumeAtTime(track, time)
+                    );
+                  }
 
                   const nowMs = performance.now();
                   const lastTarget = lastSeekTargetMap.current.get(clip.id) ?? -999;
@@ -1601,7 +1645,11 @@ export const VideoCanvas: React.FC = () => {
                   }
                 }
               } else if (video) {
+                globalAudioEngine.stopReversedClipAudio(clip.id);
                 const timeUntilStart = clip.startTime - time;
+                if (vClip.isReversed && timeUntilStart > 0 && timeUntilStart <= 2.5) {
+                  globalAudioEngine.preloadReversedAudio(vClip.sourceUrl);
+                }
                 const isPrePlaying =
                   playing &&
                   !vClip.isFrozen &&

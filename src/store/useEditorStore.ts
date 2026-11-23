@@ -32,6 +32,43 @@ import { createDefaultVisualProperties } from '../core/media/clipDefaults';
  * color grading, chroma key, mask, visual effects, speed, etc.) EXCEPT
  * entrance/exit/combo animations.
  */
+export function canMergeSplitWithPrevious(
+  prevClip: TimelineClip | undefined,
+  clip: TimelineClip | undefined
+): boolean {
+  if (!prevClip || !clip) return false;
+  if (prevClip.type !== clip.type) return false;
+  if (prevClip.type !== 'video' && prevClip.type !== 'image') return false;
+
+  const left = prevClip as VideoClip;
+  const right = clip as VideoClip;
+
+  // Must be adjacent on the timeline (a split junction)
+  if (Math.abs(left.startTime + left.duration - right.startTime) > 0.12) {
+    return false;
+  }
+
+  // Must belong to the same media source and compatible playback settings
+  if (left.sourceUrl !== right.sourceUrl) return false;
+  if (Boolean(left.isFrozen) !== Boolean(right.isFrozen)) return false;
+  if (Boolean(left.isReversed) !== Boolean(right.isReversed)) return false;
+
+  const leftSpeed = left.speed || 1;
+  const rightSpeed = right.speed || 1;
+  if (Math.abs(leftSpeed - rightSpeed) > 0.01) return false;
+
+  // For video clips, ensure continuous source timestamps from a split
+  if (left.type === 'video' && !left.isFrozen) {
+    const expectedRightSourceStart =
+      left.sourceStartTime + left.duration * leftSpeed;
+    if (Math.abs(expectedRightSourceStart - right.sourceStartTime) > 0.2) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function createCleanDerivedClip(
   clip: TimelineClip,
   overrides: {
@@ -430,6 +467,7 @@ interface EditorState {
   addDubbingClip: (clip: AudioClip) => void;
   addAudioEffectClip: (clip: AudioClip) => void;
   splitClip: (clipId?: string, atTime?: number) => void;
+  mergeSplitClip: (clipId: string) => boolean;
   trimLeftClip: (clipId?: string, atTime?: number) => void;
   trimRightClip: (clipId?: string, atTime?: number) => void;
   trimClip: (clipId: string, newStartTime: number, newDuration: number) => void;
@@ -770,25 +808,11 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const found = state.project.tracks
         .flatMap((t) => t.clips)
         .find((c) => c.id === clipId);
-      if (
-        found &&
-        !state.isPlaying &&
-        (state.currentTime < found.startTime ||
-          state.currentTime >= found.startTime + found.duration)
-      ) {
-        set({
-          selectedClipId: clipId,
-          selectedTrackId: found.trackId,
-          currentTime: Number(found.startTime.toFixed(2)),
-          inlineEditingTextClipId: keepInline,
-        });
-      } else {
-        set({
-          selectedClipId: clipId,
-          selectedTrackId: found ? found.trackId : state.selectedTrackId,
-          inlineEditingTextClipId: keepInline,
-        });
-      }
+      set({
+        selectedClipId: clipId,
+        selectedTrackId: found ? found.trackId : state.selectedTrackId,
+        inlineEditingTextClipId: keepInline,
+      });
     },
 
     setInlineEditingTextClipId: (clipId) => {
@@ -1661,6 +1685,105 @@ export const useEditorStore = create<EditorState>((set, get) => {
       }
     },
 
+    mergeSplitClip: (clipId) => {
+      const state = get();
+      let mergedLeftId: string | null = null;
+      let locked = false;
+
+      const tracks = state.project.tracks.map((track) => {
+        const hasTarget = track.clips.some((c) => c.id === clipId);
+        if (!hasTarget) return track;
+
+        if (track.isLocked) {
+          locked = true;
+          return track;
+        }
+
+        const sorted = [...track.clips].sort(
+          (a, b) => a.startTime - b.startTime
+        );
+        const targetIdx = sorted.findIndex((c) => c.id === clipId);
+        if (targetIdx <= 0) return track;
+
+        const prevClip = sorted[targetIdx - 1];
+        const rightClip = sorted[targetIdx];
+
+        if (!canMergeSplitWithPrevious(prevClip, rightClip)) {
+          return track;
+        }
+
+        const left = prevClip as VideoClip;
+        const right = rightClip as VideoClip;
+        const mergedDuration = Number(
+          (left.duration + right.duration).toFixed(2)
+        );
+
+        const mergedKeyframes = [...(left.keyframes || [])];
+        if (right.keyframes?.length) {
+          for (const kf of right.keyframes) {
+            const shiftedTime = Number((kf.time + left.duration).toFixed(2));
+            const existsNear = mergedKeyframes.some(
+              (existing) => Math.abs(existing.time - shiftedTime) <= 0.02
+            );
+            if (!existsNear) {
+              mergedKeyframes.push({ ...kf, time: shiftedTime });
+            }
+          }
+          mergedKeyframes.sort((a, b) => a.time - b.time);
+        }
+
+        const mergedClip: VideoClip = {
+          ...left,
+          duration: mergedDuration,
+          keyframes: mergedKeyframes,
+          animations: {
+            ...left.animations,
+            outType:
+              left.animations?.outType && left.animations.outType !== 'none'
+                ? left.animations.outType
+                : right.animations?.outType || 'none',
+            outDuration:
+              left.animations?.outType && left.animations.outType !== 'none'
+                ? left.animations.outDuration
+                : right.animations?.outDuration || 0.4,
+          },
+          audio: {
+            ...left.audio,
+            fadeOutDuration:
+              left.audio?.fadeOutDuration > 0
+                ? left.audio.fadeOutDuration
+                : right.audio?.fadeOutDuration || 0,
+          },
+        };
+
+        mergedLeftId = left.id;
+        const newClips = track.clips
+          .filter((c) => c.id !== right.id)
+          .map((c) => (c.id === left.id ? mergedClip : c));
+
+        return { ...track, clips: newClips };
+      });
+
+      if (locked) {
+        state.showToast('🔒 La pista está bloqueada');
+        return false;
+      }
+
+      if (!mergedLeftId) {
+        state.showToast('⚠️ No hay una división revocable en este punto');
+        return false;
+      }
+
+      const updated: Project = { ...state.project, tracks };
+      recordAndSync(updated);
+      set({
+        project: updated,
+        selectedClipId: mergedLeftId,
+      });
+      state.showToast('🔗 Transición y división eliminadas');
+      return true;
+    },
+
     trimLeftClip: (clipId, atTime) => {
       const state = get();
       const cutTime = Number((atTime ?? state.currentTime).toFixed(2));
@@ -2243,30 +2366,56 @@ export const useEditorStore = create<EditorState>((set, get) => {
     reverseClip: (clipId) => {
       const state = get();
       let nowReversed = false;
+      let targetFound = false;
+      let targetType: TimelineClip['type'] | null = null;
+      let targetSourceUrl: string | undefined;
+
       const tracks = state.project.tracks.map((track) => ({
         ...track,
         clips: track.clips.map((clip) => {
           if (clip.id === clipId) {
+            targetType = clip.type;
+            if (clip.type !== 'video' && clip.type !== 'audio') {
+              return clip;
+            }
+            targetFound = true;
             nowReversed = !clip.isReversed;
+            targetSourceUrl = (clip as VideoClip | AudioClip).sourceUrl;
+            const cleanName = clip.name
+              .replace(/\s*\[Invertido\]/g, '')
+              .replace(/\s*\[Reversa\]/g, '');
             return {
               ...clip,
               isReversed: nowReversed,
-              name: clip.isReversed
-                ? clip.name.replace(' [Invertido]', '')
-                : `${clip.name} [Invertido]`,
+              name: nowReversed ? `${cleanName} [Reversa]` : cleanName,
             };
           }
           return clip;
         }),
       }));
 
+      if (!targetFound) {
+        if (targetType) {
+          state.showToast('⚠️ Reversa solo se aplica a clips de video o audio');
+        }
+        return;
+      }
+
+      if (nowReversed) {
+        globalAudioEngine.preloadReversedAudio(targetSourceUrl);
+      } else {
+        globalAudioEngine.stopReversedClipAudio(clipId);
+      }
+
       const updated: Project = { ...state.project, tracks };
       recordAndSync(updated);
       set({ project: updated });
       state.showToast(
         nowReversed
-          ? '⏪ Clip invertido (reproducción en reversa)'
-          : '▶️ Clip restaurado a dirección normal'
+          ? targetType === 'video'
+            ? '⏪ Reversa activada (audio y video)'
+            : '⏪ Reversa activada en el audio seleccionado'
+          : '▶️ Reproducción normal restaurada'
       );
     },
 

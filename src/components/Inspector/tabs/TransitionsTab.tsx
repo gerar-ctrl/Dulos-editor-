@@ -2,22 +2,24 @@
 // TransitionsTab - Studio GLSL Transitions & Real-Time GPU Visual FX
 // ============================================================================
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import {
   VideoClip,
   TransitionType,
   VisualEffectType,
 } from '../../../types/editor';
-import { useEditorStore } from '../../../store/useEditorStore';
+import {
+  useEditorStore,
+  canMergeSplitWithPrevious,
+} from '../../../store/useEditorStore';
 import { globalAudioEngine } from '../../../core/audio/AudioEngine';
 import {
-  Layers,
-  Wand2,
   Play,
   CheckCheck,
   Scissors,
   RotateCcw,
+  Unlink,
 } from 'lucide-react';
 import { HorizontalScrollRow } from '../../Editor/HorizontalScrollRow';
 import {
@@ -27,7 +29,8 @@ import {
 
 interface TransitionsTabProps {
   clip: VideoClip;
-  initialSubTab?: 'transitions' | 'fx';
+  mode?: 'transitions' | 'fx';
+  onSplitRevoked?: () => void;
 }
 
 type TransCategory = 'all' | 'camera' | 'light' | '3d' | 'glitch' | 'wipe';
@@ -1746,7 +1749,8 @@ const FX_LIST: readonly {
 
 export const TransitionsTab: React.FC<TransitionsTabProps> = ({
   clip,
-  initialSubTab = 'transitions',
+  mode = 'transitions',
+  onSplitRevoked,
 }) => {
   const {
     updateClip,
@@ -1756,6 +1760,7 @@ export const TransitionsTab: React.FC<TransitionsTabProps> = ({
     tracks,
     showToast,
     splitClip,
+    mergeSplitClip,
   } = useEditorStore(
     useShallow((s) => ({
       updateClip: s.updateClip,
@@ -1765,16 +1770,12 @@ export const TransitionsTab: React.FC<TransitionsTabProps> = ({
       tracks: s.project.tracks,
       showToast: s.showToast,
       splitClip: s.splitClip,
+      mergeSplitClip: s.mergeSplitClip,
     }))
   );
 
-  const [subTab, setSubTab] = useState<'transitions' | 'fx'>(initialSubTab);
   const [transCategory, setTransCategory] = useState<TransCategory>('all');
   const [fxCategory, setFxCategory] = useState<FxCategory>('all');
-
-  useEffect(() => {
-    setSubTab(initialSubTab);
-  }, [initialSubTab]);
 
   const transition = clip.transition || {
     type: 'none',
@@ -1787,16 +1788,26 @@ export const TransitionsTab: React.FC<TransitionsTabProps> = ({
     speed: 50,
   };
 
-  const { sortedTrackClips, clipIdx } = useMemo(() => {
+  const { sortedTrackClips, clipIdx, canRevokeSplit } = useMemo(() => {
     const parentTrack = tracks.find((t) => t.id === clip.trackId);
     const sorted = parentTrack
       ? [...parentTrack.clips].sort((a, b) => a.startTime - b.startTime)
       : [];
+    const idx = sorted.findIndex((c) => c.id === clip.id);
+    const prevClip = idx > 0 ? sorted[idx - 1] : undefined;
     return {
       sortedTrackClips: sorted,
-      clipIdx: sorted.findIndex((c) => c.id === clip.id),
+      clipIdx: idx,
+      canRevokeSplit: canMergeSplitWithPrevious(prevClip, clip),
     };
-  }, [tracks, clip.trackId, clip.id]);
+  }, [tracks, clip]);
+
+  const handleRevokeSplitAndTransition = () => {
+    const merged = mergeSplitClip(clip.id);
+    if (merged) {
+      onSplitRevoked?.();
+    }
+  };
 
   const previewTransition = (
     newType: TransitionType,
@@ -1896,34 +1907,26 @@ export const TransitionsTab: React.FC<TransitionsTabProps> = ({
 
   return (
     <div className="space-y-2 p-2.5 text-xs text-slate-300">
-      {/* Sub-navigation: Transiciones vs Efectos Visuales */}
-      <div className="flex bg-[#141622] p-0.5 rounded-xl border border-white/10">
-        <button
-          onClick={() => setSubTab('transitions')}
-          className={`flex-1 py-1 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${
-            subTab === 'transitions'
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>Transiciones ({TRANSITION_LIST.length - 1})</span>
-        </button>
-        <button
-          onClick={() => setSubTab('fx')}
-          className={`flex-1 py-1 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${
-            subTab === 'fx'
-              ? 'bg-purple-600 text-white shadow'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <Wand2 className="w-3.5 h-3.5" />
-          <span>Efectos FX ({FX_LIST.length - 1})</span>
-        </button>
-      </div>
-
-      {subTab === 'transitions' ? (
+      {mode === 'transitions' ? (
         <>
+          {/* Revoke Split & Delete Transition Option on Split Junction */}
+          {canRevokeSplit && (
+            <div className="p-2.5 rounded-xl bg-rose-950/35 border border-rose-500/35 flex items-center justify-between gap-2">
+              <span className="text-[11px] text-rose-100 leading-tight">
+                Puedes revocar esta división para quitar la transición y volver a unir el clip en este corte.
+              </span>
+              <button
+                type="button"
+                onClick={handleRevokeSplitAndTransition}
+                className="px-2.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] flex items-center gap-1.5 shrink-0 shadow active:scale-95 transition-all"
+                title="Elimina esta transición y revoca la división en este corte"
+              >
+                <Unlink className="w-3.5 h-3.5" />
+                <span>Eliminar transición y división</span>
+              </button>
+            </div>
+          )}
+
           {/* Smart Helper when user has only 1 clip or selected the first clip */}
           {sortedTrackClips.length <= 1 && (
             <div className="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between gap-2">

@@ -269,7 +269,7 @@ export const ClipItem: React.FC<ClipItemProps> = React.memo(({
 
   const handlePointerDownLeftTrim = (e: React.PointerEvent) => {
     e.stopPropagation();
-    selectClip(clip.id);
+    if (!isSelected) selectClip(clip.id);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     didDragRef.current = false;
     setDragMode('trimLeft');
@@ -284,7 +284,7 @@ export const ClipItem: React.FC<ClipItemProps> = React.memo(({
 
   const handlePointerDownRightTrim = (e: React.PointerEvent) => {
     e.stopPropagation();
-    selectClip(clip.id);
+    if (!isSelected) selectClip(clip.id);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     didDragRef.current = false;
     setDragMode('trimRight');
@@ -303,7 +303,7 @@ export const ClipItem: React.FC<ClipItemProps> = React.memo(({
   ) => {
     e.stopPropagation();
     e.preventDefault();
-    selectClip(clip.id);
+    if (!isSelected) selectClip(clip.id);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     setDragMode(mode);
     startXRef.current = e.clientX;
@@ -441,7 +441,7 @@ export const ClipItem: React.FC<ClipItemProps> = React.memo(({
       lastTime = now;
 
       const scrollEl = scrollContainerRef?.current;
-      if (scrollEl && (didDragRef.current || dragMode !== 'move')) {
+      if (scrollEl && didDragRef.current) {
         const rect = scrollEl.getBoundingClientRect();
         const edgeZone = Math.max(44, Math.min(72, rect.width * 0.18));
         const pointerX = lastClientXRef.current;

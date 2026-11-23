@@ -1309,7 +1309,7 @@ export interface ProjectSettings {
   aspectRatio: AspectRatio;
   customWidth?: number;
   customHeight?: number;
-  fps: number; // 24, 25, 30, 50, 60
+  fps: number; // 24, 25, 30
   duration: number; // Total project duration in seconds
   background: CanvasBackground;
 }
@@ -1326,8 +1326,8 @@ export interface Project {
 // ----------------------------------------------------------------------------
 // Export Configuration
 // ----------------------------------------------------------------------------
-export type ExportResolution = '360p' | '480p' | '720p' | '1080p' | '2k' | '4k';
-export type ExportFPS = 24 | 25 | 30 | 50 | 60;
+export type ExportResolution = '360p' | '480p' | '720p' | '1080p';
+export type ExportFPS = 24 | 25 | 30;
 export type ExportBitrateQuality = 'low' | 'medium' | 'high' | 'custom';
 export type ExportFormat = 'mp4' | 'mp3' | 'wav';
 

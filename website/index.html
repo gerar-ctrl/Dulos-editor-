@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dulos editor — Editor de Video Profesional para PC y Celular</title>
+  <title>Dulos editor — Editor de Videos Cortos para PC y Celular</title>
   <meta
     name="description"
-    content="Descubre Dulos editor: edición de video profesional a 60 FPS para PC (Windows) y Celular (Android). Motor WebGL, línea de tiempo multipista, Chroma Key, audio profesional y exportación 4K sin marcas de agua."
+    content="Descubre Dulos editor: edición rápida de videos cortos (Reels, Shorts, TikToks y clips) hasta 1080p y 30 FPS para PC (Windows) y Celular (Android). Motor WebGL, Chroma Key, audio y exportación sin marcas de agua. No diseñado para proyectos largos ni pesados."
   />
-  <meta property="og:title" content="Dulos editor — Editor de Video Profesional para PC y Celular" />
+  <meta property="og:title" content="Dulos editor — Editor de Videos Cortos para PC y Celular" />
   <meta
     property="og:description"
-    content="Edición de video no lineal de alto rendimiento en escritorio y móvil. Shaders WebGL, Chroma Key, subtítulos IA, mezcla de audio y exportación 4K 60 FPS."
+    content="Edición ágil diseñada exclusivamente para videos cortos en escritorio y móvil. Shaders WebGL, Chroma Key, textos dinámicos, audio y exportación hasta 1080p y 30 FPS."
   />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#090a0f" />
@@ -25,7 +25,7 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Space+Grotesk:wght@600;700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=4" />
 </head>
 <body>
   <!-- Ambient Background Orbs -->
@@ -48,7 +48,7 @@
         <a href="#capturas">Capturas en vivo</a>
         <a href="#funcionalidades">Funcionalidades</a>
         <a href="#plataformas">PC y Celular</a>
-        <a href="#exportacion">Exportación 4K</a>
+        <a href="#exportacion">Exportación 1080p</a>
       </nav>
 
       <div class="nav-actions">
@@ -74,24 +74,45 @@
           </div>
 
           <h1 class="hero-title">
-            Edición de video profesional
+            Edición ágil para videos cortos
             <span class="gradient-text">en tu PC y en tu celular</span>
           </h1>
 
+          <div class="hero-scope-notice" role="note" aria-label="Aclaración sobre el uso del editor">
+            <p class="scope-notice-headline">
+              Dulos editor es solo para <strong>videos cortos</strong> — no está pensado para videos largos ni proyectos pesados.
+            </p>
+            <p class="scope-notice-detail">
+              Es ideal para <strong>Reels, TikToks, Shorts, estados y clips rápidos</strong>. Si buscas editar producciones extensas o videos de larga duración, te conviene usar un editor diseñado para proyectos grandes.
+            </p>
+          </div>
+
           <p class="hero-subtitle">
-            <strong>Dulos editor</strong> combina aceleración por GPU, renderizado WebGL a 60 FPS,
-            línea de tiempo multipista, Chroma Key, audio profesional y exportación 4K sin marcas de agua.
-            Todo en una aplicación rápida, fluida y lista para crear sin límites.
+            <strong>Dulos editor</strong> combina aceleración por GPU, renderizado WebGL fluido,
+            línea de tiempo multipista, Chroma Key, audio y exportación hasta 1080p a 30 FPS sin marcas de agua.
+            Todo en una aplicación ligera y estable, pensada para editar clips cortos en minutos.
           </p>
 
           <div class="hero-cta">
-            <a href="#descargar" class="btn btn-primary btn-lg">
+            <a
+              href="https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-editor-Setup-1.0.0.exe"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-primary btn-lg"
+              data-download-platform="pc"
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               <span>Descargar para PC</span>
             </a>
-            <a href="#descargar" class="btn btn-secondary btn-lg">
+            <a
+              href="https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-Editor-Android.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-secondary btn-lg"
+              data-download-platform="mobile"
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-              <span>Versión Celular</span>
+              <span>Descargar para Celular</span>
             </a>
             <a href="#capturas" class="btn btn-ghost btn-lg">
               <span>Probar vista en vivo</span>
@@ -101,12 +122,12 @@
 
           <div class="hero-metrics">
             <div class="metric">
-              <span class="metric-val">60 FPS</span>
-              <span class="metric-label">Render WebGL en vivo</span>
+              <span class="metric-val">30 FPS</span>
+              <span class="metric-label">Fluidez estable</span>
             </div>
             <div class="metric-sep"></div>
             <div class="metric">
-              <span class="metric-val">4K UHD</span>
+              <span class="metric-val">1080p HD</span>
               <span class="metric-label">Exportación por GPU</span>
             </div>
             <div class="metric-sep"></div>
@@ -117,7 +138,7 @@
             <div class="metric-sep"></div>
             <div class="metric">
               <span class="metric-val">100%</span>
-              <span class="metric-label">Edición sin conexión</span>
+              <span class="metric-label">Procesamiento local</span>
             </div>
           </div>
         </div>
@@ -144,7 +165,7 @@
               <button class="scene-pill active" data-mode="cinema">Cinematográfico</button>
               <button class="scene-pill" data-mode="glitch">VFX Glitch RGB</button>
               <button class="scene-pill" data-mode="chroma">Chroma Key</button>
-              <button class="scene-pill" data-mode="subtitles">Subtítulos IA</button>
+              <button class="scene-pill" data-mode="text">Textos Dinámicos</button>
               <button class="scene-pill" data-mode="audio">Audio &amp; Beats</button>
             </div>
           </div>
@@ -160,11 +181,11 @@
                 </div>
                 <div class="window-title">
                   <img src="/logo.svg" alt="" width="16" height="16" />
-                  <span>Dulos editor — Proyecto_Cine_4K.dulos</span>
+                  <span>Dulos editor — Proyecto_Cine_1080p</span>
                 </div>
                 <div class="window-actions">
-                  <span class="gpu-pill"><span class="gpu-dot"></span>GPU 60 FPS</span>
-                  <span class="export-pill" id="desktopExportPill">Exportar 4K</span>
+                  <span class="gpu-pill"><span class="gpu-dot"></span>GPU 30 FPS</span>
+                  <span class="export-pill" id="desktopExportPill">Exportar 1080p</span>
                 </div>
               </div>
 
@@ -205,7 +226,7 @@
                       <button class="mini-filter active" data-mode="cinema">Cine</button>
                       <button class="mini-filter" data-mode="glitch">Glitch</button>
                       <button class="mini-filter" data-mode="chroma">Chroma</button>
-                      <button class="mini-filter" data-mode="subtitles">Subs IA</button>
+                      <button class="mini-filter" data-mode="text">Texto</button>
                     </div>
                   </div>
                 </aside>
@@ -215,7 +236,7 @@
                   <div class="canvas-stage">
                     <canvas id="desktopCanvas" width="720" height="405" aria-label="Captura dinámica del editor en PC"></canvas>
                     <div class="canvas-hud-top">
-                      <span class="hud-chip">16:9 · 3840×2160</span>
+                      <span class="hud-chip">16:9 · 1920×1080</span>
                       <span class="hud-chip accent" id="desktopModeTag">Shader: Cinematográfico</span>
                     </div>
                     <div class="canvas-hud-bottom">
@@ -244,15 +265,15 @@
                         <div class="playhead-line"></div>
                       </div>
 
-                      <!-- Text / Subtitle Track -->
+                      <!-- Text Track -->
                       <div class="track-row">
                         <span class="track-label">T</span>
                         <div class="track-lane">
                           <div class="clip clip-text" style="left: 10%; width: 28%;">
-                            <span>Subtítulo IA · "Crea sin límites"</span>
+                            <span>Texto animado · "Crea sin límites"</span>
                           </div>
                           <div class="clip clip-text" style="left: 44%; width: 34%;">
-                            <span>Título · Dulos 4K 60fps</span>
+                            <span>Título · Dulos 1080p 30fps</span>
                           </div>
                         </div>
                       </div>
@@ -317,14 +338,14 @@
                       <img src="/logo.svg" alt="" width="14" height="14" />
                       Dulos
                     </span>
-                    <span class="mobile-res">9:16 · 60fps</span>
+                    <span class="mobile-res">9:16 · 30fps</span>
                     <span class="mobile-export">Exportar</span>
                   </div>
 
                   <!-- Mobile Live Vertical Canvas -->
                   <div class="mobile-canvas-wrap">
                     <canvas id="mobileCanvas" width="270" height="360" aria-label="Captura dinámica del editor en celular"></canvas>
-                    <div class="mobile-canvas-tag" id="mobileModeTag">Reel 4K · WebGL</div>
+                    <div class="mobile-canvas-tag" id="mobileModeTag">Reel 1080p · WebGL</div>
                   </div>
 
                   <!-- Mobile Playback Strip -->
@@ -352,7 +373,7 @@
                       <span class="dock-icon">♪</span>
                       <span>Audio</span>
                     </button>
-                    <button class="dock-item" data-mode="subtitles">
+                    <button class="dock-item" data-mode="text">
                       <span class="dock-icon">T</span>
                       <span>Texto</span>
                     </button>
@@ -391,17 +412,17 @@
         <!-- Feature 1: Interactive Before/After Color Grading & Shaders -->
         <div class="spotlight-card reveal">
           <div class="spotlight-info">
-            <div class="feature-tag">Motor Gráfico WebGL · 60 FPS</div>
+            <div class="feature-tag">Motor Gráfico WebGL · 30 FPS</div>
             <h3>Etalonaje profesional, Chroma Key y efectos VFX en tiempo real</h3>
             <p>
-              Ajusta exposición, contraste, saturación, nitidez 3×3, sombras, temperatura y viñeta con
-              shaders GLSL nativos. Elimina fondos verdes con precisión milimétrica (tolerancia, suavizado y
-              <em>despill</em>) o aplica Glitch RGB, aberración cromática y resplandor neón al instante.
+              Ajusta exposición, contraste, saturación, nitidez 3×3, luces, sombras, temperatura, tinte,
+              viñeta y HSL selectivo con shaders GLSL nativos. Elimina fondos verdes, azules o cualquier color
+              con cuentagotas (tolerancia, suavizado y <em>despill</em>) o aplica efectos VFX en tiempo real.
             </p>
             <ul class="feature-checklist">
-              <li>Filtros cinematográficos, vintage, nocturno y blanco y negro</li>
-              <li>Máscaras geométricas (lineal, círculo, rectángulo, estrella)</li>
-              <li>Transiciones suaves: Disolución, Barrido, Zoom y Flash</li>
+              <li>85+ filtros de color (cine, vintage, nocturno, B&amp;N y más)</li>
+              <li>10 máscaras geométricas (lineal, espejo, círculo, estrella, corazón y más)</li>
+              <li>Transiciones GLSL: Disolución, Whip Pan, Zoom, Giro 360°, Barrido y Glitch</li>
             </ul>
             <div class="preset-pills" id="gradePresets">
               <button class="preset-pill active" data-grade="cyber">Neón Cyber</button>
@@ -447,13 +468,13 @@
               <div class="mt-row">
                 <span class="mt-tag">V1</span>
                 <div class="mt-bar bar-indigo">
-                  <span>0.1x → 10x · Curva Bézier</span>
+                  <span>0.02x → 10x · Velocidad Lineal</span>
                 </div>
               </div>
               <div class="mt-row">
                 <span class="mt-tag">T</span>
                 <div class="mt-bar bar-cyan">
-                  <span>Animación Entrada + Bucle</span>
+                  <span>Animación Entrada + Salida</span>
                 </div>
               </div>
               <div class="mt-scan"></div>
@@ -492,16 +513,16 @@
               <h3>Motor de Audio Profesional y Doblaje</h3>
               <p>
                 Separa el audio de cualquier video en un toque, dibuja curvas de volumen con nodos visuales,
-                graba doblaje sincronizado y aplica filtros de voz (Robot, Radio, Eco, Grave, Aguda).
+                graba doblaje sincronizado y aplica 50 filtros de voz con previsualización en vivo.
               </p>
             </div>
           </article>
 
-          <!-- Card 3: AI Subtitles & Typography -->
+          <!-- Card 3: Dynamic Text & Typography -->
           <article class="feature-card reveal">
             <div class="feature-visual subtitle-demo">
               <div class="sub-preview-box">
-                <span class="sub-badge">Subtítulos IA · Activo</span>
+                <span class="sub-badge">258 Fuentes · 50+ Animaciones</span>
                 <p class="sub-karaoke" id="karaokeLine">
                   <span class="word active">Edita</span>
                   <span class="word">tus</span>
@@ -520,31 +541,33 @@
               <div class="feature-icon pink">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
               </div>
-              <h3>Textos Dinámicos, Subtítulos IA y Voz TTS</h3>
+              <h3>Textos Dinámicos y Tipografía</h3>
               <p>
-                Genera subtítulos automáticos con reconocimiento de voz y resaltado palabra por palabra,
-                crea locuciones con Texto a Voz y personaliza fuentes con degradados, sombras y contornos.
+                Edita textos directamente sobre el lienzo con 258 fuentes, más de 50 animaciones de entrada y salida,
+                selector de color con cuentagotas, bordes, sombras, bloques de fondo y keyframes.
               </p>
             </div>
           </article>
 
-          <!-- Card 4: Speed & Optical Flow -->
+          <!-- Card 4: Precision Linear Speed -->
           <article class="feature-card reveal">
             <div class="feature-visual speed-demo">
               <svg class="bezier-svg" viewBox="0 0 300 90" aria-hidden="true">
                 <defs>
                   <linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#6366f1" />
-                    <stop offset="50%" stop-color="#ec4899" />
-                    <stop offset="100%" stop-color="#38bdf8" />
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="50%" stop-color="#6366f1" />
+                    <stop offset="100%" stop-color="#ec4899" />
                   </linearGradient>
                 </defs>
-                <path d="M10,72 C70,72 95,16 150,16 C205,16 230,72 290,42" fill="none" stroke="url(#speedGrad)" stroke-width="3.5" stroke-linecap="round" />
-                <circle class="bezier-dot" cx="150" cy="16" r="6" fill="#ffffff" />
+                <line x1="16" y1="54" x2="284" y2="54" stroke="rgba(255,255,255,0.14)" stroke-width="4" stroke-linecap="round" />
+                <line x1="16" y1="54" x2="210" y2="54" stroke="url(#speedGrad)" stroke-width="4" stroke-linecap="round" />
+                <line x1="150" y1="42" x2="150" y2="66" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-linecap="round" />
+                <circle class="bezier-dot" cx="210" cy="54" r="6.5" fill="#ffffff" />
               </svg>
               <div class="speed-readout">
-                <span class="mono">0.1x</span>
-                <span class="speed-pill">Bullet Time · Pitch Lock</span>
+                <span class="mono">0.02x</span>
+                <span class="speed-pill">1.0x Normal · Pitch Lock</span>
                 <span class="mono">10.0x</span>
               </div>
             </div>
@@ -552,10 +575,10 @@
               <div class="feature-icon violet">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
               </div>
-              <h3>Control de Velocidad y Curvas Bézier</h3>
+              <h3>Control de Velocidad de Precisión</h3>
               <p>
-                Acelera hasta 10x o crea cámara lenta ultra fluida de 0.1x manteniendo el tono natural de la voz
-                gracias a la corrección de tono (Pitch Correction) y curvas de velocidad listas para usar.
+                Acelera hasta 10x para time-lapse o crea cámara ultra lenta desde 0.02x con previsualización en bucle
+                de la sección y opción para mantener el tono natural de la voz.
               </p>
             </div>
           </article>
@@ -570,8 +593,8 @@
           <span class="eyebrow">Multiplataforma nativo</span>
           <h2>Una misma experiencia profesional en PC y Celular</h2>
           <p>
-            Tanto si editas proyectos largos en escritorio como si creas Reels, Shorts o TikToks desde tu teléfono,
-            Dulos editor se adapta a tu pantalla y forma de trabajar.
+            Edita tus Reels, Shorts, TikToks y clips cortos con la misma fluidez desde la comodidad de tu escritorio
+            o directamente en tu teléfono. Dulos editor se adapta a tu pantalla y forma de trabajar.
           </p>
         </div>
 
@@ -589,16 +612,22 @@
             </div>
             <p class="platform-desc">
               Aplicación de escritorio nativa con <strong>FFmpeg integrado</strong> y aceleración por tarjeta gráfica.
-              Pensada para flujos exigentes, pantallas amplias y edición veloz con atajos de teclado.
+              Pensada para editar videos cortos y clips rápidos con pantallas amplias y atajos de teclado.
             </p>
             <ul class="platform-list">
               <li>Instalador nativo de escritorio con acceso directo</li>
               <li>Motor FFmpeg + WebCodecs para máxima velocidad de render</li>
               <li>Atajos de teclado profesionales (Cortar, Deshacer, Zoom, Play)</li>
-              <li>Espacio de trabajo amplio para proyectos multipista en 4K</li>
+              <li>Espacio de trabajo amplio para armar videos cortos multipista en 1080p</li>
               <li>Funciona 100% offline sin subir tus archivos a la nube</li>
             </ul>
-            <a href="#descargar" class="btn btn-primary full-width">Ver versión para PC</a>
+            <a
+              href="https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-editor-Setup-1.0.0.exe"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-primary full-width"
+              data-download-platform="pc"
+            >Descargar para PC (186 MB)</a>
           </div>
 
           <!-- Mobile Card -->
@@ -617,13 +646,19 @@
               lienzo redimensionable y formato instantáneo 9:16 para redes sociales.
             </p>
             <ul class="platform-list">
-              <li>App ligera (solo ~8 MB) con arranque instantáneo</li>
+              <li>App ligera (solo 8.2 MB) con arranque instantáneo</li>
               <li>Interfaz táctil optimizada para editar con una sola mano</li>
               <li>Recibe videos directo desde tu galería con "Compartir con Dulos"</li>
               <li>Lienzo redimensionable para priorizar vista previa o timeline</li>
-              <li>Exporta Reels, TikToks y Shorts en 1080p y 4K sin marca de agua</li>
+              <li>Exporta Reels, TikToks y Shorts hasta en 1080p a 30 FPS sin marca de agua</li>
             </ul>
-            <a href="#descargar" class="btn btn-secondary full-width">Ver versión para Celular</a>
+            <a
+              href="https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-Editor-Android.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-secondary full-width"
+              data-download-platform="mobile"
+            >Descargar APK para Celular (8.2 MB)</a>
           </div>
         </div>
       </div>
@@ -635,11 +670,11 @@
         <div class="export-card reveal">
           <div class="export-info">
             <span class="eyebrow">Renderizado por hardware</span>
-            <h2>Exporta en 4K a 60 FPS con estimación de peso en tiempo real</h2>
+            <h2>Exporta en 1080p a 30 FPS con estimación de peso en tiempo real</h2>
             <p>
-              Elige la resolución, fotogramas por segundo y relación de aspecto ideal para YouTube, Instagram,
-              TikTok o cine panorámico. Dulos editor calcula el tamaño aproximado antes de renderizar y codifica
-              directamente con tu GPU.
+              Exporta video en MP4 (desde 360p hasta 1080p Full HD y de 24 a 30 FPS) o solo audio en MP3 y WAV,
+              con la relación de aspecto ideal para YouTube, Instagram, TikTok o cine panorámico.
+              Dulos editor calcula el tamaño aproximado antes de renderizar y codifica localmente.
             </p>
             <div class="aspect-tags">
               <span>16:9 YouTube</span>
@@ -659,26 +694,26 @@
             <div class="export-group">
               <label>Resolución</label>
               <div class="seg-control" id="resControl">
-                <button data-res="720" data-mb="18">720p</button>
+                <button data-res="360" data-mb="6">360p</button>
+                <button data-res="480" data-mb="11">480p</button>
+                <button data-res="720" data-mb="20">720p</button>
                 <button data-res="1080" data-mb="42" class="active">1080p</button>
-                <button data-res="1440" data-mb="78">2K</button>
-                <button data-res="2160" data-mb="145">4K</button>
               </div>
             </div>
 
             <div class="export-group">
               <label>Fotogramas por segundo (FPS)</label>
               <div class="seg-control" id="fpsControl">
-                <button data-fps="24" data-mult="0.85">24</button>
-                <button data-fps="30" data-mult="1.0">30</button>
-                <button data-fps="60" data-mult="1.45" class="active">60 FPS</button>
+                <button data-fps="24" data-mult="0.9">24</button>
+                <button data-fps="25" data-mult="0.9">25</button>
+                <button data-fps="30" data-mult="1.0" class="active">30 FPS</button>
               </div>
             </div>
 
             <div class="export-summary">
               <div>
                 <span class="sum-label">Tamaño estimado (1 min)</span>
-                <strong class="sum-value mono" id="estSize">~61 MB</strong>
+                <strong class="sum-value mono" id="estSize">~42 MB</strong>
               </div>
               <div>
                 <span class="sum-label">Marca de agua</span>
@@ -713,21 +748,39 @@
           </p>
 
           <div class="download-cards">
-            <div class="download-option">
-              <div class="dl-meta">
-                <span class="dl-platform">PC · Windows 10 / 11</span>
-                <span class="dl-file mono">Dulos-editor-Setup-1.0.0.exe</span>
+            <a
+              href="https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-editor-Setup-1.0.0.exe"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="download-option"
+              data-download-platform="pc"
+            >
+              <div class="dl-top">
+                <div class="dl-meta">
+                  <span class="dl-platform">PC · Windows 10 / 11 (x64)</span>
+                  <span class="dl-file mono">Dulos-editor-Setup-1.0.0.exe</span>
+                </div>
+                <svg class="dl-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </div>
-              <span class="dl-tag">Instalador x64 · FFmpeg incluido</span>
-            </div>
+              <span class="dl-tag">186 MB · Descarga directa desde GitHub</span>
+            </a>
 
-            <div class="download-option">
-              <div class="dl-meta">
-                <span class="dl-platform">Celular · Android</span>
-                <span class="dl-file mono">Dulos-Editor-Android.apk</span>
+            <a
+              href="https://github.com/gerar-ctrl/Dulos-editor-/releases/download/v1.0.0/Dulos-Editor-Android.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="download-option"
+              data-download-platform="mobile"
+            >
+              <div class="dl-top">
+                <div class="dl-meta">
+                  <span class="dl-platform">Celular · Android (APK)</span>
+                  <span class="dl-file mono">Dulos-Editor-Android.apk</span>
+                </div>
+                <svg class="dl-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </div>
-              <span class="dl-tag">App nativa · ~8 MB · Offline</span>
-            </div>
+              <span class="dl-tag">8.2 MB · Descarga directa desde GitHub</span>
+            </a>
           </div>
 
           <div class="cta-badges">
@@ -735,27 +788,55 @@
             <span>✓ Sin marcas de agua</span>
             <span>✓ Aceleración por GPU</span>
           </div>
+
+          <a
+            href="https://github.com/gerar-ctrl/Dulos-editor-/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="github-releases-link"
+          >Ver todas las versiones en GitHub Releases ↗</a>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <img src="/logo.svg" alt="Dulos editor" width="24" height="24" />
-        <span><strong>Dulos editor</strong> · Edición de video para PC y Celular</span>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="/logo.svg" alt="Dulos editor" width="24" height="24" />
+          <span><strong>Dulos editor</strong> · Edición de video para PC y Celular</span>
+        </div>
+        <div class="footer-links">
+          <a href="#capturas">Capturas en vivo</a>
+          <a href="#funcionalidades">Funcionalidades</a>
+          <a href="#plataformas">PC y Celular</a>
+          <a href="#exportacion">Exportación</a>
+        </div>
       </div>
-      <div class="footer-links">
-        <a href="#capturas">Capturas en vivo</a>
-        <a href="#funcionalidades">Funcionalidades</a>
-        <a href="#plataformas">PC y Celular</a>
-        <a href="#exportacion">Exportación</a>
+
+      <div class="footer-bottom">
+        <div class="footer-credit">
+          <span>Diseñado por <strong>Gerardo Velázquez</strong></span>
+          <span class="footer-sep" aria-hidden="true">·</span>
+          <a
+            href="https://wa.me/595983429309"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="footer-whatsapp"
+            aria-label="Contactar por WhatsApp al +595983429309"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.49 0 .14 5.35.14 11.92c0 2.1.55 4.15 1.59 5.96L0 24l6.29-1.65a11.87 11.87 0 0 0 5.77 1.47h.01c6.57 0 11.92-5.35 11.92-11.92 0-3.18-1.24-6.18-3.47-8.42zM12.07 21.8h-.01a9.89 9.89 0 0 1-5.04-1.38l-.36-.21-3.73.98 1-3.64-.24-.37a9.86 9.86 0 0 1-1.52-5.26c0-5.46 4.44-9.9 9.9-9.9 2.64 0 5.13 1.03 7 2.9a9.84 9.84 0 0 1 2.9 7c0 5.46-4.44 9.88-9.9 9.88zm5.43-7.41c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.21 5.09 4.5.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z"/>
+            </svg>
+            <span>WhatsApp: +595983429309</span>
+          </a>
+        </div>
+        <p class="footer-copy">© 2026 Dulos editor. Todos los derechos reservados.</p>
       </div>
-      <p class="footer-copy">© 2026 Dulos editor. Todos los derechos reservados.</p>
     </div>
   </footer>
 
-  <script src="/app.js" defer></script>
+  <script src="/app.js?v=3" defer></script>
 </body>
 </html>

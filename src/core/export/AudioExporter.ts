@@ -406,15 +406,25 @@ export class AudioExporter {
     const speed = Math.max(0.02, Math.min(16, clip.speed || 1));
     const preservesPitch = audioCfg.preservesPitch ?? true;
 
-    const sourceOffset = Math.max(
-      0,
-      Math.min(
-        Math.max(0, (clip.sourceStartTime || 0) - trimmedStartSec),
-        Math.max(0, clipBuffer.duration - 0.01)
-      )
-    );
-    const maxSourceSpan = Math.max(0.01, clipBuffer.duration - sourceOffset);
     const requestedSourceSpan = playDuration * speed;
+    const rawSourceStart = Math.max(
+      0,
+      (clip.sourceStartTime || 0) - trimmedStartSec
+    );
+    const sourceOffset = clip.isReversed
+      ? Math.max(
+          0,
+          Math.min(
+            clipBuffer.duration -
+              Math.min(clipBuffer.duration, rawSourceStart + requestedSourceSpan),
+            Math.max(0, clipBuffer.duration - 0.01)
+          )
+        )
+      : Math.max(
+          0,
+          Math.min(rawSourceStart, Math.max(0, clipBuffer.duration - 0.01))
+        );
+    const maxSourceSpan = Math.max(0.01, clipBuffer.duration - sourceOffset);
     const actualSourceSpan = Math.min(maxSourceSpan, requestedSourceSpan);
     const usePitchPreservingStretch =
       preservesPitch && Math.abs(speed - 1.0) > 0.002;
