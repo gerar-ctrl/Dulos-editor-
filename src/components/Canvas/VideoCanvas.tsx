@@ -707,6 +707,11 @@ export const VideoCanvas: React.FC = () => {
               videoElementsMap.current.set(clip.id, video);
               attachToHiddenDom(video);
             } else if (!video || video.src !== vClip.sourceUrl) {
+              if (video) {
+                releaseVideoElement(video);
+                lastSeekTargetMap.current.delete(clip.id);
+                lastSeekTimeMsMap.current.delete(clip.id);
+              }
               video = document.createElement('video');
               if (
                 vClip.sourceUrl.startsWith('http://') ||
@@ -933,8 +938,8 @@ export const VideoCanvas: React.FC = () => {
       lastTimestamp = timestamp;
 
       const state = useEditorStore.getState();
-      // Pause preview WebGL rendering while ExportModal is open so mobile GPU/memory isn't contested
-      if (state.isExportModalOpen) {
+      // Pause preview WebGL rendering while ExportModal or Reverse processing is active so mobile GPU/memory isn't contested
+      if (state.isExportModalOpen || state.reverseProcessing) {
         animationFrameId = requestAnimationFrame(loop);
         return;
       }
@@ -962,7 +967,7 @@ export const VideoCanvas: React.FC = () => {
           for (const clip of track.clips) {
             if (time < clip.startTime || time >= clip.startTime + clip.duration) continue;
             if (clip.type !== 'video' && clip.type !== 'audio') continue;
-            if (clip.isFrozen || clip.isReversed) continue;
+            if (clip.isFrozen || (clip.isReversed && !clip.isPreReversedMedia)) continue;
             if (clip.speedCurve?.points && clip.speedCurve.points.length >= 2) continue;
 
             const el =
@@ -1164,7 +1169,7 @@ export const VideoCanvas: React.FC = () => {
                   hasClipAnim ||
                   hasKfs ||
                   hasFx ||
-                  vClip.isReversed
+                  (vClip.isReversed && !vClip.isPreReversedMedia)
                 ) {
                   hasTimeVaryingVisual = true;
                   break;
@@ -1286,7 +1291,8 @@ export const VideoCanvas: React.FC = () => {
             if (clip.type === 'audio') {
               const aClip = clip as AudioClip;
               const audioEl = audioElementsMap.current.get(clip.id);
-              if (aClip.isReversed) {
+              const isAudioVirtReversed = Boolean(aClip.isReversed && !aClip.isPreReversedMedia);
+              if (isAudioVirtReversed) {
                 if (audioEl) {
                   if (!audioEl.paused) audioEl.pause();
                   if (!audioEl.muted) audioEl.muted = true;
@@ -1433,11 +1439,12 @@ export const VideoCanvas: React.FC = () => {
                 const effSpeed = getEffectiveSpeed(vClip, localTime);
 
                 if (video) {
+                  const isVirtReversed = Boolean(vClip.isReversed && !vClip.isPreReversedMedia);
                   let targetMediaTime = vClip.sourceStartTime;
                   if (vClip.isFrozen) {
                     targetMediaTime = vClip.sourceStartTime;
                     if (!video.paused) video.pause();
-                  } else if (vClip.isReversed) {
+                  } else if (isVirtReversed) {
                     const clipSpan = vClip.duration * effSpeed;
                     targetMediaTime = Math.max(
                       0,
@@ -1457,12 +1464,12 @@ export const VideoCanvas: React.FC = () => {
                     );
                   }
 
-                  if (!vClip.isFrozen && !vClip.isReversed) {
+                  if (!vClip.isFrozen && !isVirtReversed) {
                     applySafePlaybackRate(video, effSpeed);
                     applyPreservesPitch(video, vClip.audio.preservesPitch ?? true);
                   }
 
-                  if (vClip.isReversed) {
+                  if (isVirtReversed) {
                     if (video.preload !== 'auto') {
                       video.preload = 'auto';
                     }
@@ -1493,7 +1500,7 @@ export const VideoCanvas: React.FC = () => {
                   const lastSeekMs = lastSeekTimeMsMap.current.get(clip.id) ?? 0;
                   const currentDrift = Math.abs(video.currentTime - targetMediaTime);
 
-                  if (playing && !vClip.isFrozen && !vClip.isReversed) {
+                  if (playing && !vClip.isFrozen && !isVirtReversed) {
                     if (video.preload !== 'auto') {
                       video.preload = 'auto';
                     }
@@ -1580,7 +1587,7 @@ export const VideoCanvas: React.FC = () => {
                           }
                           const prevEffSpeed = getEffectiveSpeed(pVClip, pVClip.duration);
                           let prevEndMediaTime =
-                            pVClip.isFrozen || pVClip.isReversed
+                            pVClip.isFrozen || (pVClip.isReversed && !pVClip.isPreReversedMedia)
                               ? pVClip.sourceStartTime
                               : pVClip.sourceStartTime + pVClip.duration * prevEffSpeed;
                           if (Number.isFinite(prevEl.duration) && prevEl.duration > 0) {
@@ -1646,14 +1653,15 @@ export const VideoCanvas: React.FC = () => {
                 }
               } else if (video) {
                 globalAudioEngine.stopReversedClipAudio(clip.id);
+                const isVirtReversed = Boolean(vClip.isReversed && !vClip.isPreReversedMedia);
                 const timeUntilStart = clip.startTime - time;
-                if (vClip.isReversed && timeUntilStart > 0 && timeUntilStart <= 2.5) {
+                if (isVirtReversed && timeUntilStart > 0 && timeUntilStart <= 2.5) {
                   globalAudioEngine.preloadReversedAudio(vClip.sourceUrl);
                 }
                 const isPrePlaying =
                   playing &&
                   !vClip.isFrozen &&
-                  !vClip.isReversed &&
+                  !isVirtReversed &&
                   timeUntilStart > 0 &&
                   timeUntilStart <= 0.06;
 
@@ -1678,7 +1686,7 @@ export const VideoCanvas: React.FC = () => {
                   const effSpeed = getEffectiveSpeed(vClip, 0);
                   let entryMediaTime = vClip.isFrozen
                     ? vClip.sourceStartTime
-                    : vClip.isReversed
+                    : isVirtReversed
                     ? Math.max(0, vClip.sourceStartTime + vClip.duration * effSpeed)
                     : vClip.sourceStartTime;
                   if (Number.isFinite(video.duration) && video.duration > 0) {

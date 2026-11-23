@@ -171,16 +171,16 @@ async function resolveClipBlob(clip: VideoClip | AudioClip): Promise<Blob | null
   if (runtimeBlob && runtimeBlob.size > 0) return runtimeBlob;
 
   try {
-    const storedBlob = await ProjectStorage.getMediaBlob(clip.id);
-    if (storedBlob && storedBlob.size > 0) return storedBlob;
-  } catch {}
-
-  try {
     const response = await fetch(url);
     if (response.ok) {
       const blob = await response.blob();
       if (blob.size > 0) return blob;
     }
+  } catch {}
+
+  try {
+    const storedBlob = await ProjectStorage.getMediaBlob(clip.id);
+    if (storedBlob && storedBlob.size > 0) return storedBlob;
   } catch {}
 
   return null;
@@ -202,7 +202,7 @@ async function decodeClipAudio(
     // Fast streaming range decode for MP4/MOV via WebCodecs AudioDecoder (avoids loading GBs into RAM)
     if (
       !preloadedBuffer &&
-      !clip.isReversed &&
+      !(clip.isReversed && !clip.isPreReversedMedia) &&
       rangeStartSec !== undefined &&
       rangeEndSec !== undefined
     ) {
@@ -392,7 +392,8 @@ export class AudioExporter {
     const audioCfg = clip.audio;
     if (!audioCfg) return;
 
-    const clipBuffer = clip.isReversed
+    const isVirtReversed = Boolean(clip.isReversed && !clip.isPreReversedMedia);
+    const clipBuffer = isVirtReversed
       ? reverseAudioBuffer(offlineCtx, rawBuffer)
       : rawBuffer;
 
@@ -411,7 +412,7 @@ export class AudioExporter {
       0,
       (clip.sourceStartTime || 0) - trimmedStartSec
     );
-    const sourceOffset = clip.isReversed
+    const sourceOffset = isVirtReversed
       ? Math.max(
           0,
           Math.min(

@@ -120,7 +120,7 @@ function hasCustomVisualEffects(
   allowSimpleTransform = true
 ): boolean {
   if (clip.keyframes && clip.keyframes.length > 0) return true;
-  if (clip.isReversed || clip.isFrozen) return true;
+  if ((clip.isReversed && !clip.isPreReversedMedia) || clip.isFrozen) return true;
   const t = clip.transform;
   if (t.blendMode && t.blendMode !== 'normal') {
     return true;
@@ -422,19 +422,17 @@ async function resolveClipBlob(
   if (sourceUrl) {
     const memBlob = ProjectStorage.getRuntimeBlob(sourceUrl);
     if (memBlob && memBlob.size > 0) return memBlob;
-  }
-  try {
-    const stored = await ProjectStorage.getMediaBlob(clipId);
-    if (stored && stored.size > 0) return stored;
-  } catch {}
-  try {
-    if (sourceUrl) {
+    try {
       const res = await fetch(sourceUrl);
       if (res.ok) {
         const b = await res.blob();
         if (b.size > 0) return b;
       }
-    }
+    } catch {}
+  }
+  try {
+    const stored = await ProjectStorage.getMediaBlob(clipId);
+    if (stored && stored.size > 0) return stored;
   } catch {}
   return null;
 }
@@ -543,7 +541,7 @@ export class ElectronFFmpegExporter {
             ) {
               return false;
             }
-            if (ac.isReversed) return false;
+            if (ac.isReversed && !ac.isPreReversedMedia) return false;
             if (ac.audio?.voiceFilter && ac.audio.voiceFilter !== 'none') return false;
             if (ac.audio?.noiseReduction) return false;
           }

@@ -25,6 +25,9 @@ import {
   interpolateClipTransform,
 } from '../core/keyframes/interpolateKeyframes';
 import { createDefaultVisualProperties } from '../core/media/clipDefaults';
+import { ReverseClipEngine } from '../core/video/ReverseClipEngine';
+
+let activeReverseAbortController: AbortController | null = null;
 
 /**
  * Builds a derived clip (used when splitting or freezing) that inherits ALL
@@ -394,6 +397,7 @@ interface EditorState {
     reopenMediaDrawer?: boolean;
   } | null;
   toastMessage: string | null;
+  reverseProcessing: { clipId: string; progress: number; stage: string } | null;
   isRecordingDub: boolean;
   dubRecordingStartTime: number | null;
   hasUnsavedChanges: boolean;
@@ -477,6 +481,7 @@ interface EditorState {
   duplicateClip: (clipId: string) => void;
   freezeFrame: (clipId: string, duration?: number) => void;
   reverseClip: (clipId: string) => void;
+  cancelReverseProcessing: () => void;
   updateClip: <T extends TimelineClip>(clipId: string, updates: Partial<T>) => void;
   updateAllVisualClips: (
     updates: Partial<VideoClip>,
@@ -577,6 +582,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     project: initial,
     currentTime: 0,
     isPlaying: false,
+    reverseProcessing: null,
     timelineZoom: 65,
     trackHeight: 48,
     isMagnetEnabled: true,
@@ -2213,6 +2219,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
         let newClips: TimelineClip[];
         let capturedFreezeMediaTime = vClip.sourceStartTime;
+        const isVirtRev = Boolean(vClip.isReversed && !vClip.isPreReversedMedia);
 
         if (isInsideClip) {
           const freezeAt = Number(state.currentTime.toFixed(2));
@@ -2221,7 +2228,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
           const freezeMediaTime = vClip.isFrozen
             ? vClip.sourceStartTime
-            : vClip.isReversed
+            : isVirtRev
             ? Math.max(0, vClip.sourceStartTime + rightDuration * speed)
             : vClip.sourceStartTime + leftDuration * speed;
           capturedFreezeMediaTime = freezeMediaTime;
@@ -2229,7 +2236,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
           const leftClip: VideoClip = {
             ...vClip,
             duration: leftDuration,
-            sourceStartTime: vClip.isReversed ? freezeMediaTime : vClip.sourceStartTime,
+            sourceStartTime: isVirtRev ? freezeMediaTime : vClip.sourceStartTime,
             keyframes: vClip.keyframes?.length
               ? vClip.keyframes.filter((kf) => kf.time <= leftDuration + 0.01)
               : vClip.keyframes,
@@ -2242,7 +2249,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
             id: rightId,
             startTime: Number((freezeAt + duration).toFixed(2)),
             duration: rightDuration,
-            sourceStartTime: vClip.isReversed ? vClip.sourceStartTime : freezeMediaTime,
+            sourceStartTime: isVirtRev ? vClip.sourceStartTime : freezeMediaTime,
             isFrozen: Boolean(vClip.isFrozen),
             splitLocalTime: leftDuration,
           }) as VideoClip;
@@ -2262,7 +2269,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
           const freezeAt = Number(clip.startTime.toFixed(2));
           const freezeMediaTime = vClip.isFrozen
             ? vClip.sourceStartTime
-            : vClip.isReversed
+            : isVirtRev
             ? Math.max(0, vClip.sourceStartTime + clip.duration * speed)
             : vClip.sourceStartTime;
           capturedFreezeMediaTime = freezeMediaTime;
@@ -2283,7 +2290,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
           const localOffset = Math.max(0, clip.duration - 0.02);
           const freezeMediaTime = vClip.isFrozen
             ? vClip.sourceStartTime
-            : vClip.isReversed
+            : isVirtRev
             ? vClip.sourceStartTime
             : vClip.sourceStartTime + localOffset * speed;
           capturedFreezeMediaTime = freezeMediaTime;
@@ -2363,60 +2370,266 @@ export const useEditorStore = create<EditorState>((set, get) => {
       }
     },
 
+    cancelReverseProcessing: () => {
+      if (activeReverseAbortController) {
+        try {
+          activeReverseAbortController.abort();
+        } catch {}
+        activeReverseAbortController = null;
+      }
+      set({ reverseProcessing: null });
+    },
+
     reverseClip: (clipId) => {
       const state = get();
-      let nowReversed = false;
-      let targetFound = false;
-      let targetType: TimelineClip['type'] | null = null;
-      let targetSourceUrl: string | undefined;
+      if (state.reverseProcessing) {
+        state.showToast('⏳ Ya se está procesando una reversa...');
+        return;
+      }
 
-      const tracks = state.project.tracks.map((track) => ({
-        ...track,
-        clips: track.clips.map((clip) => {
+      let targetClip: VideoClip | AudioClip | null = null;
+      let targetNonMediaType: TimelineClip['type'] | null = null;
+
+      for (const track of state.project.tracks) {
+        for (const clip of track.clips) {
           if (clip.id === clipId) {
-            targetType = clip.type;
-            if (clip.type !== 'video' && clip.type !== 'audio') {
-              return clip;
+            if (clip.type === 'video' || clip.type === 'audio') {
+              targetClip = clip as VideoClip | AudioClip;
+            } else {
+              targetNonMediaType = clip.type;
             }
-            targetFound = true;
-            nowReversed = !clip.isReversed;
-            targetSourceUrl = (clip as VideoClip | AudioClip).sourceUrl;
-            const cleanName = clip.name
-              .replace(/\s*\[Invertido\]/g, '')
-              .replace(/\s*\[Reversa\]/g, '');
-            return {
-              ...clip,
-              isReversed: nowReversed,
-              name: nowReversed ? `${cleanName} [Reversa]` : cleanName,
-            };
+            break;
           }
-          return clip;
-        }),
-      }));
+        }
+        if (targetClip || targetNonMediaType) break;
+      }
 
-      if (!targetFound) {
-        if (targetType) {
+      if (!targetClip) {
+        if (targetNonMediaType) {
           state.showToast('⚠️ Reversa solo se aplica a clips de video o audio');
         }
         return;
       }
 
-      if (nowReversed) {
-        globalAudioEngine.preloadReversedAudio(targetSourceUrl);
-      } else {
+      const cleanName = targetClip.name
+        .replace(/\s*\[Invertido\]/g, '')
+        .replace(/\s*\[Reversa\]/g, '');
+
+      // Case 1: Already reversed -> turn OFF instantaneously & restore original media
+      if (targetClip.isReversed) {
         globalAudioEngine.stopReversedClipAudio(clipId);
+        const tracks = state.project.tracks.map((track) => ({
+          ...track,
+          clips: track.clips.map((clip) => {
+            if (clip.id !== clipId) return clip;
+            const mediaClip = clip as VideoClip | AudioClip;
+            if (mediaClip.isPreReversedMedia && mediaClip.originalSourceUrl) {
+              return {
+                ...mediaClip,
+                sourceUrl: mediaClip.originalSourceUrl,
+                sourceStartTime: mediaClip.originalSourceStartTime ?? 0,
+                sourceDuration: mediaClip.originalSourceDuration ?? mediaClip.sourceDuration,
+                isReversed: false,
+                isPreReversedMedia: false,
+                name: cleanName,
+              };
+            }
+            return {
+              ...mediaClip,
+              isReversed: false,
+              isPreReversedMedia: false,
+              name: cleanName,
+            };
+          }),
+        }));
+        const updated: Project = { ...state.project, tracks };
+        recordAndSync(updated);
+        set({ project: updated });
+        state.showToast('▶️ Reproducción normal restaurada');
+        return;
       }
 
-      const updated: Project = { ...state.project, tracks };
-      recordAndSync(updated);
-      set({ project: updated });
-      state.showToast(
-        nowReversed
-          ? targetType === 'video'
+      // Case 2: Procedural demo video -> virtual reverse is instant and smooth
+      const isProcedural =
+        !targetClip.sourceUrl ||
+        targetClip.sourceUrl.startsWith('procedural://') ||
+        targetClip.id.startsWith('sample_');
+      if (isProcedural) {
+        const tracks = state.project.tracks.map((track) => ({
+          ...track,
+          clips: track.clips.map((clip) =>
+            clip.id === clipId
+              ? { ...clip, isReversed: true, isPreReversedMedia: false, name: `${cleanName} [Reversa]` }
+              : clip
+          ),
+        }));
+        const updated: Project = { ...state.project, tracks };
+        recordAndSync(updated);
+        set({ project: updated });
+        state.showToast('⏪ Reversa activada');
+        return;
+      }
+
+      // Case 3: Cached pre-reversed media still matches current trim/span -> instant swap
+      const currentSpeed = Math.max(0.05, Math.min(16, targetClip.speed || 1));
+      const expectedSpan = targetClip.duration * currentSpeed;
+      if (
+        targetClip.reversedSourceUrl &&
+        Math.abs((targetClip.originalSourceStartTime ?? -1) - (targetClip.sourceStartTime || 0)) < 0.05 &&
+        Math.abs((targetClip.reversedSourceDuration ?? 0) - expectedSpan) < 0.08
+      ) {
+        const cachedUrl = targetClip.reversedSourceUrl;
+        const cachedDur = targetClip.reversedSourceDuration || expectedSpan;
+        const tracks = state.project.tracks.map((track) => ({
+          ...track,
+          clips: track.clips.map((clip) => {
+            if (clip.id !== clipId) return clip;
+            const mediaClip = clip as VideoClip | AudioClip;
+            return {
+              ...mediaClip,
+              originalSourceUrl: mediaClip.sourceUrl,
+              originalSourceStartTime: mediaClip.sourceStartTime,
+              originalSourceDuration: mediaClip.sourceDuration,
+              sourceUrl: cachedUrl,
+              sourceFilePath: undefined,
+              sourceStartTime: 0,
+              sourceDuration: cachedDur,
+              isReversed: true,
+              isPreReversedMedia: true,
+              name: `${cleanName} [Reversa]`,
+            };
+          }),
+        }));
+        const updated: Project = { ...state.project, tracks };
+        recordAndSync(updated);
+        set({ project: updated });
+        state.showToast(
+          targetClip.type === 'video'
             ? '⏪ Reversa activada (audio y video)'
             : '⏪ Reversa activada en el audio seleccionado'
-          : '▶️ Reproducción normal restaurada'
-      );
+        );
+        return;
+      }
+
+      // Case 4: Physically generate a real reversed MP4 (video+audio) or WAV (audio)
+      const abortController = new AbortController();
+      activeReverseAbortController = abortController;
+      const clipSnapshot = targetClip;
+
+      set({
+        isPlaying: false,
+        reverseProcessing: {
+          clipId,
+          progress: 2,
+          stage:
+            clipSnapshot.type === 'video'
+              ? 'Preparando reversa de video...'
+              : 'Preparando reversa de audio...',
+        },
+      });
+
+      const onProgress = (percent: number, stage: string) => {
+        if (abortController.signal.aborted) return;
+        set({
+          reverseProcessing: {
+            clipId,
+            progress: Math.max(0, Math.min(100, Math.round(percent))),
+            stage,
+          },
+        });
+      };
+
+      const runPromise =
+        clipSnapshot.type === 'video'
+          ? ReverseClipEngine.reverseVideoClip(
+              clipSnapshot as VideoClip,
+              onProgress,
+              abortController.signal
+            )
+          : ReverseClipEngine.reverseAudioClip(
+              clipSnapshot as AudioClip,
+              onProgress,
+              abortController.signal
+            );
+
+      runPromise
+        .then((result) => {
+          if (activeReverseAbortController === abortController) {
+            activeReverseAbortController = null;
+          }
+          if (abortController.signal.aborted) {
+            try {
+              URL.revokeObjectURL(result.reversedUrl);
+            } catch {}
+            set({ reverseProcessing: null });
+            return;
+          }
+
+          const latest = get();
+          let applied = false;
+          const tracks = latest.project.tracks.map((track) => ({
+            ...track,
+            clips: track.clips.map((clip) => {
+              if (clip.id !== clipId) return clip;
+              applied = true;
+              const mediaClip = clip as VideoClip | AudioClip;
+              const latestCleanName = mediaClip.name
+                .replace(/\s*\[Invertido\]/g, '')
+                .replace(/\s*\[Reversa\]/g, '');
+              return {
+                ...mediaClip,
+                originalSourceUrl: mediaClip.sourceUrl,
+                originalSourceStartTime: mediaClip.sourceStartTime,
+                originalSourceDuration: mediaClip.sourceDuration,
+                reversedSourceUrl: result.reversedUrl,
+                reversedSourceDuration: result.reversedDuration,
+                sourceUrl: result.reversedUrl,
+                sourceFilePath: undefined,
+                sourceStartTime: 0,
+                sourceDuration: result.reversedDuration,
+                ...(result.waveform && mediaClip.type === 'audio'
+                  ? { waveform: result.waveform }
+                  : {}),
+                isReversed: true,
+                isPreReversedMedia: true,
+                name: `${latestCleanName} [Reversa]`,
+              };
+            }),
+          }));
+
+          if (!applied) {
+            try {
+              URL.revokeObjectURL(result.reversedUrl);
+            } catch {}
+            set({ reverseProcessing: null });
+            return;
+          }
+
+          const updated: Project = { ...latest.project, tracks };
+          recordAndSync(updated);
+          set({ project: updated, reverseProcessing: null });
+          latest.showToast(
+            clipSnapshot.type === 'video'
+              ? '⏪ Reversa lista (audio y video)'
+              : '⏪ Reversa lista en el audio'
+          );
+        })
+        .catch((err) => {
+          if (activeReverseAbortController === abortController) {
+            activeReverseAbortController = null;
+          }
+          set({ reverseProcessing: null });
+          if (err && (err.name === 'AbortError' || abortController.signal.aborted)) {
+            get().showToast('Reversa cancelada');
+            return;
+          }
+          const msg =
+            err instanceof Error && err.message
+              ? err.message
+              : 'No se pudo procesar la reversa';
+          console.error('ReverseClipEngine error:', err);
+          get().showToast(`⚠️ Error en Reversa: ${msg}`);
+        });
     },
 
     updateClip: (clipId, updates) => {

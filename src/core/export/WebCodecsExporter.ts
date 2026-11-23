@@ -195,7 +195,7 @@ function computeClipMediaTime(clip: VideoClip, currentTime: number): number {
   if (clip.isFrozen) {
     return Math.max(0, clip.sourceStartTime);
   }
-  if (clip.isReversed) {
+  if (clip.isReversed && !clip.isPreReversedMedia) {
     const clipSpan = clip.duration * effSpeed;
     return Math.max(
       0,
@@ -427,19 +427,17 @@ export class WebCodecsExporter {
     if (sourceUrl) {
       const memBlob = ProjectStorage.getRuntimeBlob(sourceUrl);
       if (memBlob && memBlob.size > 0) return memBlob;
-    }
-    try {
-      const storedBlob = await ProjectStorage.getMediaBlob(clipId);
-      if (storedBlob && storedBlob.size > 0) return storedBlob;
-    } catch {}
-    try {
-      if (sourceUrl) {
+      try {
         const res = await fetch(sourceUrl);
         if (res.ok) {
           const blob = await res.blob();
           if (blob.size > 0) return blob;
         }
-      }
+      } catch {}
+    }
+    try {
+      const storedBlob = await ProjectStorage.getMediaBlob(clipId);
+      if (storedBlob && storedBlob.size > 0) return storedBlob;
     } catch {}
     return null;
   }

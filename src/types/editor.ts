@@ -1227,6 +1227,12 @@ export interface BaseClip {
   sourceDuration: number; // Original source duration
   isFrozen?: boolean;
   isReversed?: boolean;
+  isPreReversedMedia?: boolean; // True when sourceUrl is already a physically reversed MP4/WAV blob
+  originalSourceUrl?: string;
+  originalSourceStartTime?: number;
+  originalSourceDuration?: number;
+  reversedSourceUrl?: string;
+  reversedSourceDuration?: number;
   hasSeparatedAudio?: boolean;
   speed: number; // Linear speed (0.1x to 100x)
   speedCurve?: SpeedCurve;

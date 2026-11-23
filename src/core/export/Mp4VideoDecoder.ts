@@ -1657,6 +1657,179 @@ export class Mp4VideoFrameReader {
     return chosen;
   }
 
+  public getVideoInfo(): {
+    durationSec: number;
+    width: number;
+    height: number;
+    fps: number;
+    tkhdRotation: number;
+    sampleCount: number;
+  } {
+    let maxEnd = 0;
+    for (let i = 0; i < this.samples.length; i++) {
+      const e = this.samples[i].ptsSec + Math.max(0.001, this.samples[i].durationSec);
+      if (e > maxEnd) maxEnd = e;
+    }
+    const avgFps =
+      maxEnd > 0.05 && this.samples.length > 1
+        ? this.samples.length / maxEnd
+        : 30;
+    const rawW = this.config.codedWidth || 1280;
+    const rawH = this.config.codedHeight || 720;
+    const isRotated90 = this.tkhdRotation === 90 || this.tkhdRotation === 270;
+    return {
+      durationSec: maxEnd,
+      width: isRotated90 ? rawH : rawW,
+      height: isRotated90 ? rawW : rawH,
+      fps: Math.max(12, Math.min(60, avgFps)),
+      tkhdRotation: this.tkhdRotation,
+      sampleCount: this.samples.length,
+    };
+  }
+
+  public getGopRanges(
+    startSec: number,
+    endSec: number
+  ): Array<{ keyIdx: number; endIdx: number }> {
+    const n = this.samples.length;
+    if (n === 0) return [];
+
+    // Collect all keyframe indices
+    const keyIndices: number[] = [];
+    for (let i = 0; i < n; i++) {
+      if (this.samples[i].isKey || i === 0) {
+        keyIndices.push(i);
+      }
+    }
+
+    const ranges: Array<{ keyIdx: number; endIdx: number }> = [];
+    for (let g = 0; g < keyIndices.length; g++) {
+      const keyIdx = keyIndices[g];
+      const endIdx = g + 1 < keyIndices.length ? keyIndices[g + 1] - 1 : n - 1;
+      let gopMinPts = Infinity;
+      let gopMaxPts = -Infinity;
+      for (let i = keyIdx; i <= endIdx; i++) {
+        const p = this.samples[i].ptsSec;
+        if (p < gopMinPts) gopMinPts = p;
+        if (p > gopMaxPts) gopMaxPts = p;
+      }
+      if (gopMaxPts < startSec - 0.05 || gopMinPts > endSec + 0.05) {
+        continue;
+      }
+      ranges.push({ keyIdx, endIdx });
+    }
+    return ranges;
+  }
+
+  public async decodeGopRange(
+    keyIdx: number,
+    endIdx: number,
+    onFrame: (frame: VideoFrame, manualRotation: number) => Promise<void> | void,
+    signal?: AbortSignal
+  ): Promise<void> {
+    if (this.isDisposed || !this.decoder || this.decoderError) return;
+    if (keyIdx < 0 || keyIdx >= this.samples.length) return;
+    const clampedEnd = Math.min(this.samples.length - 1, Math.max(keyIdx, endIdx));
+
+    this.clearFrames();
+    if (this.currentFrame) {
+      try {
+        this.currentFrame.close();
+      } catch {}
+      this.currentFrame = null;
+    }
+
+    try {
+      this.decoder.reset();
+      this.decoder.configure(this.config);
+      this.justReset = true;
+    } catch (err) {
+      this.decoderError =
+        err instanceof Error ? err : new Error(String(err || 'VideoDecoder reset failed'));
+      return;
+    }
+
+    const drainBuffered = async () => {
+      while (this.decodedFrames.length > 0) {
+        const frame = this.decodedFrames.shift()!;
+        if (signal?.aborted || this.isDisposed) {
+          try {
+            frame.close();
+          } catch {}
+          continue;
+        }
+        try {
+          const rot = this.getNeedsManualRotation(frame);
+          await onFrame(frame, rot);
+        } finally {
+          try {
+            frame.close();
+          } catch {}
+        }
+      }
+    };
+
+    for (let i = keyIdx; i <= clampedEnd; i++) {
+      if (signal?.aborted || this.isDisposed || this.decoderError) break;
+
+      await drainBuffered();
+
+      let stallCycles = 0;
+      while (
+        this.decoder.decodeQueueSize >= this.maxDecodeQueue &&
+        !signal?.aborted &&
+        !this.isDisposed &&
+        !this.decoderError
+      ) {
+        const before = this.outputCount;
+        await this.waitForDecoderEvent(8);
+        await drainBuffered();
+        if (this.outputCount === before) {
+          if (++stallCycles > 80) break;
+        } else {
+          stallCycles = 0;
+        }
+      }
+
+      const s = this.samples[i];
+      const sampleData =
+        this.bytes && s.offset + s.size <= this.fileSize
+          ? this.bytes.subarray(s.offset, s.offset + s.size)
+          : await this.readSampleBytes(s.offset, s.size);
+      if (!sampleData) break;
+
+      try {
+        const isKeyChunk = s.isKey || this.justReset;
+        this.justReset = false;
+        const chunk = new EncodedVideoChunk({
+          type: isKeyChunk ? 'key' : 'delta',
+          timestamp: Math.round(s.ptsSec * 1_000_000),
+          duration: Math.round(s.durationSec * 1_000_000),
+          data: sampleData,
+        });
+        this.decoder.decode(chunk);
+      } catch (err) {
+        this.decoderError =
+          err instanceof Error ? err : new Error(String(err || 'VideoDecoder decode error'));
+        break;
+      }
+
+      if (this.decodedFrames.length > 0) {
+        await drainBuffered();
+      }
+    }
+
+    if (!signal?.aborted && !this.isDisposed && !this.decoderError && this.decoder.state === 'configured') {
+      try {
+        await Promise.race([
+          this.decoder.flush(),
+          new Promise<void>((r) => setTimeout(r, 2500)),
+        ]);
+      } catch {}
+    }
+    await drainBuffered();
+  }
+
   public dispose() {
     this.isDisposed = true;
     this.prefetchPromise = null;

@@ -76,6 +76,8 @@ export const App: React.FC = () => {
     isScreenCropMode,
     setScreenCropMode,
     toastMessage,
+    reverseProcessing,
+    cancelReverseProcessing,
     hasUnsavedChanges,
   } = useEditorStore(
     useShallow((s) => ({
@@ -100,6 +102,8 @@ export const App: React.FC = () => {
       isScreenCropMode: s.isScreenCropMode,
       setScreenCropMode: s.setScreenCropMode,
       toastMessage: s.toastMessage,
+      reverseProcessing: s.reverseProcessing,
+      cancelReverseProcessing: s.cancelReverseProcessing,
       hasUnsavedChanges: s.hasUnsavedChanges,
     }))
   );
@@ -537,6 +541,36 @@ export const App: React.FC = () => {
       {toastMessage && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-indigo-600/95 text-white border border-indigo-400/50 px-3.5 py-1 rounded-full text-[11px] font-bold shadow-[0_4px_20px_rgba(79,70,229,0.6)] pointer-events-none whitespace-nowrap max-w-[90vw] truncate">
           {toastMessage}
+        </div>
+      )}
+
+      {/* Reversa Processing Modal Overlay */}
+      {reverseProcessing && (
+        <div className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="w-full max-w-xs rounded-2xl bg-[#141622] border border-white/10 p-5 shadow-2xl flex flex-col items-center gap-3.5">
+            <div className="text-sm font-bold text-white tracking-tight">
+              Procesando Reversa
+            </div>
+            <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 transition-all duration-150"
+                style={{ width: `${Math.max(4, reverseProcessing.progress)}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between w-full text-[11px] text-slate-300">
+              <span className="truncate pr-2">{reverseProcessing.stage}</span>
+              <span className="font-mono font-bold text-indigo-300 shrink-0">
+                {reverseProcessing.progress}%
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={cancelReverseProcessing}
+              className="mt-1 px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 active:scale-95 text-xs font-semibold text-slate-200 transition"
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
 
