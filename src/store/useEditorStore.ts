@@ -26,6 +26,10 @@ import {
 } from '../core/keyframes/interpolateKeyframes';
 import { createDefaultVisualProperties } from '../core/media/clipDefaults';
 import { ReverseClipEngine } from '../core/video/ReverseClipEngine';
+import {
+  hasExportableMedia,
+  NO_MEDIA_EXPORT_MESSAGE,
+} from '../core/export/exportValidation';
 
 let activeReverseAbortController: AbortController | null = null;
 
@@ -1106,6 +1110,11 @@ export const useEditorStore = create<EditorState>((set, get) => {
     },
 
     setIsExportModalOpen: (open) => {
+      if (open && !hasExportableMedia(get().project)) {
+        get().showToast(NO_MEDIA_EXPORT_MESSAGE);
+        set({ isExportModalOpen: false });
+        return;
+      }
       set({ isExportModalOpen: open });
     },
 

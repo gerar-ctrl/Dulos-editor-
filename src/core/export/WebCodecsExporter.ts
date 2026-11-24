@@ -16,6 +16,10 @@ import {
 } from './estimateSize';
 import { WebGLRenderer } from '../webgl/WebGLRenderer';
 import { AudioExporter } from './AudioExporter';
+import {
+  hasExportableMedia,
+  NO_MEDIA_EXPORT_MESSAGE,
+} from './exportValidation';
 import { hasTrackAudibleVolume } from '../audio/trackVolumeEnvelope';
 import { ProjectStorage } from '../storage/projectStorage';
 import { Mp4VideoFrameReader } from './Mp4VideoDecoder';
@@ -1123,6 +1127,10 @@ export class WebCodecsExporter {
     onProgress: (progress: RenderProgress) => void
   ): Promise<Blob> {
     this.isCancelled = false;
+
+    if (!hasExportableMedia(project)) {
+      throw new Error(NO_MEDIA_EXPORT_MESSAGE);
+    }
 
     // Fast path: native hardware-accelerated FFmpeg export in Electron
     if (settings.exportEngine !== 'webcodecs') {

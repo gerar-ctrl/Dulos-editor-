@@ -15,6 +15,10 @@ import {
   X,
 } from 'lucide-react';
 import { AspectRatio } from '../../types/editor';
+import {
+  hasExportableMedia,
+  NO_MEDIA_EXPORT_MESSAGE,
+} from '../../core/export/exportValidation';
 
 interface EditorTopBarProps {
   onOpenFormat: () => void;
@@ -42,6 +46,7 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
   );
 
   const hasClips = project.tracks.some((t) => t.clips.length > 0);
+  const canExport = hasExportableMedia(project);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(project.settings.name);
@@ -158,7 +163,13 @@ export const EditorTopBar: React.FC<EditorTopBarProps> = ({
           {/* Export Button */}
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white shadow-[0_2px_12px_rgba(168,85,247,0.4)] active:scale-95 transition-all"
+            aria-disabled={!canExport}
+            title={canExport ? 'Exportar proyecto' : NO_MEDIA_EXPORT_MESSAGE}
+            className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs font-extrabold transition-all ${
+              canExport
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white shadow-[0_2px_12px_rgba(168,85,247,0.4)] active:scale-95'
+                : 'bg-white/10 text-slate-400 border border-white/10 opacity-60 cursor-not-allowed'
+            }`}
           >
             <Download className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Exportar</span>

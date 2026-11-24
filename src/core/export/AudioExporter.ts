@@ -20,6 +20,10 @@ import { buildVoiceFilterGraph } from '../audio/voiceFilters';
 import { timeStretchAudioBufferSlice } from '../audio/timeStretch';
 import { Mp4AudioDecoder } from './Mp4AudioDecoder';
 import type { RenderProgress } from './WebCodecsExporter';
+import {
+  hasExportableMedia,
+  NO_MEDIA_EXPORT_MESSAGE,
+} from './exportValidation';
 
 function encodeStereoWAV(buffer: AudioBuffer): Blob {
   const numChannels = Math.min(2, Math.max(1, buffer.numberOfChannels));
@@ -520,6 +524,9 @@ export class AudioExporter {
     kbps = 192,
     onProgress?: (progress: RenderProgress) => void
   ): Promise<Blob> {
+    if (!hasExportableMedia(project)) {
+      throw new Error(NO_MEDIA_EXPORT_MESSAGE);
+    }
     if (format === 'wav') {
       return await this.exportWAV(project, onProgress);
     }

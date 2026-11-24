@@ -5,6 +5,10 @@
 import React, { useState } from 'react';
 import { useEditorStore } from '../../store/useEditorStore';
 import {
+  hasExportableMedia,
+  NO_MEDIA_EXPORT_MESSAGE,
+} from '../../core/export/exportValidation';
+import {
   Undo2,
   Redo2,
   Download,
@@ -29,6 +33,7 @@ export const TopNavBar: React.FC = () => {
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(project.settings.name);
+  const canExport = hasExportableMedia(project);
 
   const handleTitleSubmit = () => {
     setIsEditingTitle(false);
@@ -129,7 +134,13 @@ export const TopNavBar: React.FC = () => {
 
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-bold bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white shadow-lg active:scale-95 transition-all"
+          aria-disabled={!canExport}
+          title={canExport ? 'Exportar proyecto' : NO_MEDIA_EXPORT_MESSAGE}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
+            canExport
+              ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white shadow-lg active:scale-95'
+              : 'bg-white/10 text-slate-400 border border-white/10 opacity-60 cursor-not-allowed'
+          }`}
         >
           <Download className="w-3.5 h-3.5" />
           <span>Exportar</span>

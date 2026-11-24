@@ -22,6 +22,10 @@ import {
 } from '../../core/export/WebCodecsExporter';
 import { AudioExporter } from '../../core/export/AudioExporter';
 import {
+  hasExportableMedia,
+  NO_MEDIA_EXPORT_MESSAGE,
+} from '../../core/export/exportValidation';
+import {
   X,
   Download,
   CheckCircle2,
@@ -320,6 +324,12 @@ export const ExportModal: React.FC = () => {
 
   const handleStartExport = async () => {
     setErrorMessage(null);
+
+    if (!hasExportableMedia(project)) {
+      setErrorMessage(NO_MEDIA_EXPORT_MESSAGE);
+      showToast(NO_MEDIA_EXPORT_MESSAGE);
+      return;
+    }
 
     // On PC mode, resolve custom destination (folder or Save As) BEFORE rendering
     // while we still have user activation for permission prompts / file pickers.
@@ -781,6 +791,7 @@ export const ExportModal: React.FC = () => {
     }
   };
 
+  const canExport = hasExportableMedia(project);
   const isAudioOnly = format === 'mp3' || format === 'wav';
   const previewFilename = resolveExportFilename(
     customFileName,
@@ -1437,7 +1448,9 @@ export const ExportModal: React.FC = () => {
             {!downloadUrl && !directSavedPath && !androidSavedInfo && (
               <button
                 onClick={handleStartExport}
-                className="px-5 py-2 rounded-md font-bold bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white shadow-lg active:scale-95 transition-all"
+                disabled={!canExport}
+                title={canExport ? undefined : NO_MEDIA_EXPORT_MESSAGE}
+                className="px-5 py-2 rounded-md font-bold bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white shadow-lg active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
               >
                 {format === 'mp3'
                   ? 'Exportar Audio MP3'
